@@ -2260,3 +2260,253 @@ p {
     width: 100%;
   }
 }
+
+/* ================================================================
+   ADDITIONS: Avatar Builder, Todo Tool, Iframe Modal Header,
+   Badge fix, extra card colors
+================================================================ */
+
+/* Badge type fix — 'built-in' type in JS outputs badge-built-in */
+.badge-built-in {
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.badge-mock-api {
+  background: rgba(167,139,250,0.12);
+  color: #a78bfa;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* Extra icon background colors */
+.card-icon.color-violet { background: rgba(167,139,250,0.15); }
+.card-icon.color-pink   { background: rgba(251,113,133,0.15); }
+.card-icon.color-blue   { background: rgba(56,189,248,0.15);  }
+
+/* ── AVATAR BUILDER ── */
+.avatar-builder {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.avatar-preview-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  border: 2px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.avatar-preview:hover {
+  border-color: var(--accent);
+}
+
+.avatar-options {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 200px;
+}
+
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.avatar-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.avatar-option-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.avatar-opt-btn {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.avatar-opt-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.avatar-opt-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Avatar builder container in settings */
+#avatarBuilderContainer {
+  padding: 18px 20px;
+}
+
+/* ── TODO TOOL ── */
+.todo-tool {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.todo-add-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-subtle);
+  border-radius: var(--ui-radius, 10px);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 8px;
+  transition: opacity 0.2s;
+}
+
+.todo-item.done {
+  opacity: 0.5;
+}
+
+.todo-item.done .todo-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.todo-check {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.todo-check:hover { transform: scale(1.2); }
+
+.todo-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.todo-del {
+  font-size: 0.9rem;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
+
+.todo-del:hover { opacity: 1; }
+
+.todo-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ── IFRAME MODAL HEADER ── */
+.iframe-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 14px 0;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Make iframe modal wider */
+#modalOverlay .modal {
+  max-width: 900px;
+}
+
+/* ── LIGHT MODE TEXT READABILITY FIXES ── */
+[data-theme="light"] .card-title       { color: #111827; }
+[data-theme="light"] .card-description { color: #4b5563; }
+[data-theme="light"] .view-title       { color: #111827; }
+[data-theme="light"] .nav-item         { color: #374151; }
+[data-theme="light"] .nav-item.active  { color: var(--accent); }
+[data-theme="light"] .settings-label  { color: #111827; }
+[data-theme="light"] .settings-desc   { color: #6b7280; }
+[data-theme="light"] .fc-card-content { color: #111827; }
+[data-theme="light"] .pom-time        { color: #111827; }
+[data-theme="light"] .duo-username    { color: #111827; }
+[data-theme="light"] .duo-stat-val    { color: #111827; }
+[data-theme="light"] .todo-text       { color: #111827; }
+[data-theme="light"] .login-form h1   { color: #111827; }
+[data-theme="light"] .auth-input      { color: #111827; }
+[data-theme="light"] .user-greeting   { color: #111827; }
+[data-theme="light"] .logo-text       { color: #111827; }
+
+/* ── MODAL CLOSE BUTTON POSITIONING ── */
+.modal {
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+}
+
+/* ── SIDEBAR USER GREETING POLISH ── */
+.user-greeting {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── CARD STAGGER FIX (more cards) ── */
+.app-card:nth-child(7)  { animation-delay: 0.32s; }
+.app-card:nth-child(8)  { animation-delay: 0.36s; }
+.app-card:nth-child(9)  { animation-delay: 0.40s; }
+.app-card:nth-child(10) { animation-delay: 0.44s; }

@@ -6,30 +6,26 @@
   <title>Settings | StudyVerse</title>
   <link rel="stylesheet" href="styles/main.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <!-- Toast container -->
   <div class="toast-container" id="toastContainer"></div>
 
   <div class="app-shell">
-    <!-- ===== SIDEBAR (same as index.html) ===== -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-logo">
         <span class="logo-icon">⭐</span>
         <span class="logo-text">StudyVerse</span>
       </div>
-
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item">
           <span class="nav-icon">🏠</span>
           <span class="nav-label">Dashboard</span>
         </a>
-        <!-- Favorites nav on settings page just goes back to index -->
-        <a href="index.html#favorites" class="nav-item">
+        <a href="index.html" class="nav-item">
           <span class="nav-icon">⭐</span>
           <span class="nav-label">Favorites</span>
         </a>
@@ -38,7 +34,6 @@
           <span class="nav-label">Settings</span>
         </a>
       </nav>
-
       <div class="sidebar-bottom">
         <div class="user-greeting" id="userGreeting">Hi there!</div>
         <button class="nav-item logout-btn" onclick="logout()">
@@ -48,7 +43,7 @@
       </div>
     </aside>
 
-    <!-- ===== MAIN CONTENT: Settings ===== -->
+    <!-- MAIN CONTENT -->
     <main class="main-content">
       <section class="view active">
         <header class="view-header">
@@ -60,7 +55,7 @@
 
         <div class="settings-panel">
 
-          <!-- ── PROFILE ── -->
+          <!-- PROFILE -->
           <div class="settings-group">
             <div class="settings-group-title">Profile</div>
 
@@ -85,23 +80,19 @@
                 <button class="btn-accent" onclick="updateUsername()">Save</button>
               </div>
             </div>
+          </div>
 
-            <div class="settings-row">
-              <div>
-                <div class="settings-label">Avatar</div>
-                <div class="settings-desc">Profile picture (Firebase Storage coming soon)</div>
-              </div>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <input type="file" id="avatarInput" accept="image/*" class="settings-input" style="width:auto; padding:6px;">
-                <button class="btn-secondary" onclick="updateAvatar()">Upload</button>
-              </div>
+          <!-- AVATAR BUILDER -->
+          <div class="settings-group">
+            <div class="settings-group-title">Avatar</div>
+            <div id="avatarBuilderContainer">
+              <div style="padding:20px; color:var(--text-muted); font-size:0.88rem;">Loading avatar builder…</div>
             </div>
           </div>
 
-          <!-- ── SECURITY ── -->
+          <!-- SECURITY -->
           <div class="settings-group">
             <div class="settings-group-title">Security</div>
-
             <div class="settings-row">
               <div>
                 <div class="settings-label">Change Password</div>
@@ -111,7 +102,7 @@
             </div>
           </div>
 
-          <!-- ── APPEARANCE ── -->
+          <!-- APPEARANCE -->
           <div class="settings-group">
             <div class="settings-group-title">Appearance</div>
 
@@ -142,11 +133,11 @@
             </div>
           </div>
 
-          <!-- ── ABOUT ── -->
+          <!-- ABOUT -->
           <div class="settings-group">
             <div class="settings-group-title">About</div>
             <div class="settings-about">
-              <p><strong>StudyVerse</strong> v1.0 — Your educational universe.</p>
+              <p><strong>StudyVerse</strong> v1.1 — Your educational universe.</p>
               <p>Built with vanilla HTML, CSS &amp; JavaScript. Hosted on Cloudflare Pages.</p>
               <p>Questions or feedback? Open an issue on <a href="https://github.com" target="_blank">GitHub</a>.</p>
             </div>
