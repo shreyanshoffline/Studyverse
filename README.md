@@ -1,29 +1,7 @@
-# ✦ StudyVerse — Your Study Universe
+# ⭐ StudyVerse — Your Educational Universe
 
 A unified educational launcher hub. Clean, modular, and built to grow.
-
----
-
-## 🚀 Recommended Deployment: Cloudflare Pages
-
-**studyverse.dev** is a perfect domain for this. Here's why Cloudflare Pages is the best free choice over GitHub Pages:
-
-| Feature               | Cloudflare Pages | GitHub Pages |
-|-----------------------|-----------------|--------------|
-| Free custom domain    | ✅ Yes           | ✅ Yes        |
-| Global CDN (200+ PoPs)| ✅ Yes           | ⚠️ Limited   |
-| Unlimited bandwidth   | ✅ Yes           | ⚠️ Capped    |
-| Instant cache purge   | ✅ Yes           | ❌ No         |
-| Deploy from Git       | ✅ Yes           | ✅ Yes        |
-| Deploy time           | ~10 seconds     | ~1-2 minutes |
-| Free SSL              | ✅ Yes           | ✅ Yes        |
-
-### Deploy Steps
-1. Push your 3 files (`index.html`, `styles.css`, `app.js`) to a GitHub repo.
-2. Go to [pages.cloudflare.com](https://pages.cloudflare.com) → **Create a Project** → Connect GitHub.
-3. Select your repo. Leave build settings blank (it's static HTML).
-4. Deploy. Done.
-5. Add your custom domain `studyverse.dev` in the Cloudflare Pages dashboard.
+Deployed at **https://thestudyverse.pages.dev** via Cloudflare Pages.
 
 ---
 
@@ -31,86 +9,155 @@ A unified educational launcher hub. Clean, modular, and built to grow.
 
 ```
 studyverse/
-├── index.html    — App shell, layout, all views
-├── styles.css    — All CSS variables, themes, components
-├── app.js        — All logic, tools, state management
-└── README.md     — This file
+├── index.html          ← Main dashboard (requires auth)
+├── login.html          ← Login / Sign-up page
+├── settings.html       ← User profile & appearance settings
+├── styles/
+│   └── main.css        ← All CSS variables, themes, components
+├── scripts/
+│   └── app.js          ← Firebase auth + tool logic (single file)
+├── assets/             ← Future: avatars, logos
+├── wrangler.jsonc      ← Optional: CLI deployment config
+└── README.md
+```
+
+---
+
+## 🔥 Firebase Setup (Required before deploying)
+
+### 1. Create a Firebase project
+1. Go to [console.firebase.google.com](https://console.firebase.google.com)
+2. Click **Add project** → name it `studyverse` → Continue
+
+### 2. Enable Authentication providers
+In the Firebase console: **Authentication → Sign-in method**
+- Enable **Google**
+- Enable **Email/Password**
+- Enable **Microsoft** (requires Azure app registration)
+- Enable **Apple** (requires Apple Developer account + Service ID)
+
+Add `thestudyverse.pages.dev` to **Authorized domains**.
+
+### 3. Create a Firestore database
+1. Go to **Firestore Database → Create database**
+2. Start in **test mode** (you'll tighten rules later)
+3. Choose a region close to your users
+
+### 4. Set Firestore security rules
+In **Firestore → Rules**, paste:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+### 5. Copy your Firebase config into app.js
+In **Project Settings → Your Apps → Web App**, copy your config and replace the placeholders in `scripts/app.js`:
+```js
+const firebaseConfig = {
+  apiKey:            "AIzaSy...",
+  authDomain:        "studyverse-xxxx.firebaseapp.com",
+  projectId:         "studyverse-xxxx",
+  storageBucket:     "studyverse-xxxx.appspot.com",
+  messagingSenderId: "123456789",
+  appId:             "1:123456789:web:abcdef"
+};
+```
+
+---
+
+## 🚀 Deploying to Cloudflare Pages
+
+### Option A — GitHub (Recommended)
+1. Push this folder to a GitHub repository
+2. Go to [pages.cloudflare.com](https://pages.cloudflare.com) → **Create a project**
+3. Connect your GitHub repo
+4. **Build settings:** leave blank (no build command, no output directory)
+5. Click **Save and Deploy**
+6. Under **Custom Domains**, add `thestudyverse.pages.dev`
+
+### Option B — Wrangler CLI
+```bash
+npm install -g wrangler
+wrangler login
+wrangler pages deploy . --project-name=thestudyverse
 ```
 
 ---
 
 ## ➕ How to Add a New Tool
 
-Open `app.js` and find the `TOOLS` array at the top. Add one object:
+Open `scripts/app.js` and find the `state.tools` array. Append one object:
 
 ```js
 {
-  id:          'khan-academy',          // Unique ID, no spaces
-  title:       'Khan Academy',          // Card title
-  description: 'Free world-class education for anyone.', // Card subtitle
-  icon:        '🎓',                    // Emoji icon
-  iconColor:   'color-green',           // See colors below
-  type:        'external',              // 'builtin' | 'embed' | 'external' | 'widget'
-  badge:       'Deep Link',             // Badge label on card
-  badgeClass:  'badge-external',        // 'badge-builtin' | 'badge-embed' | 'badge-external' | 'badge-api'
-  url:         'https://khanacademy.org', // For 'embed' and 'external' types
-},
+  id:           'khan-academy',           // unique ID, no spaces
+  name:         'Khan Academy',           // card title
+  description:  'Free world-class education for anyone.',
+  icon:         '🎓',                     // emoji
+  type:         'external',              // 'built-in' | 'iframe' | 'external' | 'mock-api'
+  url:          'https://khanacademy.org',// for iframe / external
+  color:        'green',                 // color-blue|purple|green|orange|pink|amber|teal
+}
 ```
 
-Available `iconColor` values:
-`color-blue` `color-purple` `color-green` `color-orange` `color-pink` `color-amber` `color-teal`
+For `type: 'built-in'`, also add a `modalContent: 'my-key'` field and a matching `renderMyKey()` function that populates `#modalContent`.
+
+**That's it.** The grid re-renders automatically.
 
 ---
 
-## 🎨 Changing the Default Theme
+## 🎨 Themes & Accent Colors
 
-In `app.js`, find `State`:
-```js
-currentTheme:   'dark',    // 'dark' | 'light'
-currentPersona: 'default', // 'kids' | 'default' | 'adult'
-currentAccent:  'sky',     // 'sky' | 'violet' | 'emerald' | 'rose' | 'amber' | 'coral'
-```
+Themes are stored in `localStorage` (`theme` and `accent` keys) and applied as `data-theme` / `data-accent` attributes on `<html>`.
 
-To add a new accent color, add to `ACCENT_COLORS` in `app.js` and add a CSS block in `styles.css`:
+**To add a new accent color:**
+1. Add a CSS block in `styles/main.css`:
 ```css
 [data-accent="mycolor"] {
   --accent:       #hexvalue;
-  --accent-dim:   rgba(r,g,b,0.12);
+  --accent-dim:   rgba(r, g, b, 0.12);
   --accent-hover: #lighterHex;
-  --accent-glow:  rgba(r,g,b,0.20);
+  --accent-glow:  rgba(r, g, b, 0.20);
 }
+```
+2. Add a swatch button in `settings.html`:
+```html
+<button class="color-swatch" data-accent="mycolor"
+        onclick="setAccent('mycolor')" style="background:#hexvalue;"></button>
 ```
 
 ---
 
 ## 🤖 AI Flashcard Generation
 
-The flashcard tool calls the Claude API to generate cards from pasted text or dropped files.
+The flashcard tool has a "Generate with AI" button. To make it work:
+1. Create a Cloudflare Worker that proxies requests to `api.anthropic.com/v1/messages`
+2. Replace the placeholder `showToast(...)` in `renderFlashcards()` with a `fetch()` call to your Worker
+3. Parse the returned JSON into `flashcardDeck` entries
 
-In production:
-- The API call in `FlashcardTool.generateWithAI()` uses `fetch` to `api.anthropic.com`.
-- You'll need a backend proxy (Cloudflare Worker, or a small Node.js server) to keep your API key secret.
-- A Cloudflare Worker for this is ~15 lines of code. Ask Claude for one when you're ready.
-
----
-
-## 🌐 Adding Real Duolingo / External API
-
-In `app.js`, find `DuolingoWidget._mockData`. Replace the static values with a real `fetch()` call to your API endpoint. The UI will render whatever data you return.
+A minimal Cloudflare Worker proxy is ~20 lines. Ask Claude for one when you're ready.
 
 ---
 
 ## 📋 Roadmap Ideas
 
-- [ ] User accounts (Cloudflare D1 database)
-- [ ] Community deck browser (public decks feed)
+- [ ] AI flashcard generation via Cloudflare Worker proxy
+- [ ] Real-time Firestore deck storage (create/edit/delete decks)
 - [ ] Spaced repetition algorithm (SM-2)
+- [ ] Firebase Storage avatar uploads
+- [ ] Community deck browser (public decks feed)
 - [ ] Progress charts per subject
-- [ ] Mobile app (wrap in Capacitor or Expo)
 - [ ] Real Duolingo API connection
-- [ ] Claude AI tutor chat panel
+- [ ] Claude AI tutor chat panel in sidebar
 - [ ] YouTube player embed tool
 - [ ] Google Calendar integration
+- [ ] Mobile app (Capacitor / Expo wrapper)
 
 ---
 

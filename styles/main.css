@@ -33,6 +33,28 @@
    Swap themes by changing data-theme on <html>.
 ================================================================ */
 
+/* ================================================================
+   0. SPACING & FONT-SIZE TOKENS
+   Used by login page and settings page styles.
+================================================================ */
+:root {
+  /* Spacing scale */
+  --spacing-xs:   4px;
+  --spacing-sm:   8px;
+  --spacing-md:  16px;
+  --spacing-lg:  24px;
+  --spacing-xl:  32px;
+  --spacing-2xl: 48px;
+
+  /* Font-size scale */
+  --font-size-xs:  0.72rem;
+  --font-size-sm:  0.82rem;
+  --font-size-md:  0.95rem;
+  --font-size-lg:  1.1rem;
+  --font-size-xl:  1.4rem;
+  --font-size-2xl: 1.8rem;
+}
+
 /* --- DARK MODE (default) --- */
 :root, [data-theme="dark"] {
   /* Background layers */
@@ -2043,6 +2065,31 @@ p {
 
 .signup-prompt a:hover {
   text-decoration: underline;
+}
+
+.auth-input {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--ui-radius, 10px);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+  font-size: var(--font-size-md);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.auth-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+#loginForm,
+#signupForm {
+  display: flex;
+  flex-direction: column;
 }
 
 /* ================================================================

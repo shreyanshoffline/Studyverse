@@ -1,14 +1,16 @@
+// wrangler.jsonc — Cloudflare Pages configuration
+// This file is used if you deploy via `wrangler pages deploy`
+// or if Cloudflare Pages detects it in the repo root.
+//
+// For most setups you don't need this file at all:
+// just push to GitHub and connect via the Cloudflare dashboard.
+// This file is provided for teams who prefer CLI deployment.
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "studyverse",
-  "compatibility_date": "2026-05-16",
-  "observability": {
-    "enabled": true
-  },
-  "assets": {
-    "directory": "."
-  },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ]
+  "name": "thestudyverse",
+
+  // Pages project — no build command needed (pure static HTML)
+  "pages_build_output_dir": ".",
+
+  // No environment variables needed; Firebase config is in app.js
+  "compatibility_date": "2024-01-01"
 }

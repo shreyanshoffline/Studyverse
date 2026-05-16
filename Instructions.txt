@@ -1,0 +1,511 @@
+System Role:
+You are an expert Full-Stack Developer specializing in frontend development, Firebase authentication, UX/UI design, and static site deployment. Your task is to generate the complete, production-ready codebase for StudyVerse, an educational hub inspired by the Roblox ecosystem. The project must be 100% static (no backend server), use vanilla HTML/CSS/JS, and deploy seamlessly to Cloudflare Pages at https://thestudyverse.pages.dev.
+
+📋 Project Overview
+Name: StudyVerse
+Domain: https://thestudyverse.pages.dev
+Hosting: Cloudflare Pages (static site)
+Tech Stack:
+
+Frontend: Vanilla HTML5, CSS (Flexbox/Grid), JavaScript (ES6+)
+Auth: Firebase Authentication (Spark Plan - Free Forever)
+Database: Firebase Firestore (for user data: nicknames, favorites, etc.)
+Storage: Firebase Storage (for user avatars, optional)
+Deployment: Cloudflare Pages (static site hosting)
+Core Philosophy:
+
+Prevent "tab overload" for students by centralizing all study tools in one dashboard.
+Modular architecture: Adding/removing tools should require only updating a single data object.
+User Experience: Modern, clean, and intuitive (hybrid of Notion, Steam, and Roblox launcher).
+Personalization: Users see "Hi [Nickname]!" and can customize their profile.
+
+🎯 Features to Implement
+1. Authentication System
+
+
+Login Page (login.html):
+
+Split-screen design:
+
+Left side: StudyVerse branding (⭐ logo + tagline: "Your educational universe. Log in to access tools, track progress, and learn without limits.").
+Right side: Login form with:
+
+OAuth Buttons: Google, Apple, Microsoft (with icons).
+Email/Password Form: Email input, password input, "Forgot Password?" link, and "Log In" button.
+Sign-Up Link: "New here? Sign Up" (triggers email/password signup flow).
+
+
+Nickname Setup: After first login (OAuth or email), prompt users to set a required nickname before proceeding.
+Redirect Logic: After login, redirect to index.html.
+
+
+User Data Storage (Firestore):
+
+Store for each user:
+javascript
+Copy
+
+{
+  nickname: string,       // Required, set on first login
+  username: string,       // Default: email prefix (e.g., "shrey" from "shrey@gmail.com")
+  avatar: string,         // URL to avatar image (default placeholder)
+  favorites: array,       // IDs of favorited tools (e.g., ["flashcards", "pomodoro"])
+  createdAt: timestamp    // Firebase server timestamp
+}
+
+
+
+
+
+
+Personalized Greetings:
+
+Display "Hi [Nickname]!" in the sidebar of index.html and settings.html.
+Redirect to login.html if not authenticated.
+
+
+Settings Page (settings.html):
+
+Profile Section:
+
+Editable nickname and username.
+Avatar upload (placeholder for now; no actual Firebase Storage yet).
+
+Security Section:
+
+Change Password button (triggers Firebase reauthentication).
+Forgot Password link (uses Firebase sendPasswordResetEmail).
+
+Appearance Section:
+
+Theme Toggle: Dark/Light mode (uses CSS variables).
+Accent Color Picker: 6 options (sky, violet, emerald, rose, amber, coral).
+
+
+2. Dashboard (index.html)
+
+
+Sidebar:
+
+StudyVerse logo (⭐).
+Navigation: Dashboard, Favorites, Settings.
+User Greeting: "Hi [Nickname]!" (fetched from Firestore).
+Logout Button: Redirects to login.html.
+
+
+Main Content:
+
+App Grid: Responsive grid of tool cards (Flashcards, Pomodoro, Desmos, etc.).
+Favorites View: Shows only favorited tools.
+Settings View: Linked to settings.html.
+
+
+Tool Cards:
+
+5 Starter Tools (from previous prompts):
+
+Flashcards (Built-in: Modal with flip animation).
+Time Budgeter (Built-in: Pomodoro timer).
+Desmos Graphing (iFrame embed).
+Google NotebookLM (External link, opens in new tab).
+Duolingo Tracker (Mock API widget).
+
+Visuals: Icons, descriptions, and type badges (builtin/iframe/external).
+Favorites: Heart button to add/remove from favorites (saved to Firestore).
+
+3. Tool Integrations
+
+
+  
+    
+      Tool
+      Type
+      Implementation
+    
+  
+  
+    
+      Flashcards
+      Built-in
+      Modal with flip animation, deck navigation, and AI generation placeholder.
+    
+    
+      Time Budgeter
+      Built-in
+      Pomodoro timer with session types (25/5/15 min), start/pause/reset buttons.
+    
+    
+      Desmos Graphing
+      iFrame
+      Embed https://www.desmos.com/calculator in a modal.
+    
+    
+      Google NotebookLM
+      External
+      Opens https://notebooklm.google in a new tab.
+    
+    
+      Duolingo Tracker
+      Mock API
+      Static UI with placeholder stats (streak, XP, lessons).
+    
+  
+
+
+4. Cloudflare Pages Deployment
+
+Static Site: No server-side code (100% frontend).
+Domain: https://thestudyverse.pages.dev (already configured in Cloudflare).
+Deployment:
+
+Push code to a GitHub repo connected to Cloudflare Pages.
+Cloudflare automatically deploys from the main branch.
+
+Environment Variables: None needed (Firebase config is hardcoded in app.js).
+
+📁 File Structure
+text
+Copy
+
+studyverse/
+│── login.html          # Dedicated login page
+│── index.html          # Main dashboard
+│── settings.html       # User settings
+│── styles/
+│   └── main.css        # Global styles + login/settings styles
+│── scripts/
+│   └── app.js          # Firebase auth + tool logic
+│── assets/             # Future: Avatars, logos
+│── README.md           # Setup instructions
+
+
+
+
+🎨 UI/UX Requirements
+1. Visual Design
+
+Theme: Default to Dark Mode (with CSS variables for easy switching).
+Colors:
+
+Primary: #6366f1 (Indigo)
+Accent: #38bdf8 (Sky Blue, default), with 5 alternatives (violet, emerald, rose, amber, coral).
+Backgrounds: Dark (#0b0f1a) or Light (#f4f6fa).
+
+Typography:
+
+Headings: 'Sora', sans-serif (bold, modern).
+Body: 'Inter', sans-serif (clean, readable).
+
+Layout:
+
+Sidebar: Fixed left panel (230px wide) with navigation.
+Main Content: Responsive grid for tool cards.
+Modals: Centered, with backdrop blur.
+
+2. Login Page (login.html)
+
+Left Side (Branding):
+
+Logo: ⭐ StudyVerse (large, centered).
+Tagline: "Your educational universe. Log in to access tools, track progress, and learn without limits."
+Background: Gradient (primary to secondary color).
+
+Right Side (Login Form):
+
+Title: "Welcome to StudyVerse"
+OAuth Buttons: 3 buttons (Google, Apple, Microsoft) with icons.
+Divider: Horizontal line with "or" text.
+Email/Password Form:
+
+Email input (placeholder: "Email").
+Password input (placeholder: "Password").
+"Forgot Password?" link.
+"Log In" button.
+
+Sign-Up Link: "New here? Sign Up" (opens email/password signup flow).
+
+3. Dashboard (index.html)
+
+Sidebar:
+
+Logo + navigation (Dashboard, Favorites, Settings).
+User Greeting: "Hi [Nickname]!" (e.g., "Hi Shrey!").
+Logout Button: Redirects to login.html.
+
+Main Content:
+
+Header: Title + subtitle (e.g., "Your Study Universe" + "What are we studying today?").
+Search Bar: Placeholder for future search functionality.
+App Grid: Responsive grid of tool cards (5 starter tools).
+
+Tool Cards:
+
+Icon (emoji or SVG).
+Name (bold).
+Description (1-2 lines).
+Type Badge (builtin/iframe/external).
+Favorite Button (❤️, toggles on click).
+Hover Effect: Lift + shadow.
+
+4. Settings Page (settings.html)
+
+Profile Section:
+
+Nickname: Editable input + save button.
+Username: Editable input + save button.
+Avatar: File upload (placeholder for now).
+
+Security Section:
+
+Change Password: Button (triggers Firebase reauthentication).
+
+Appearance Section:
+
+Theme Toggle: Dark/Light mode buttons (🌙/☀️).
+Accent Color: 6 swatches (sky, violet, emerald, rose, amber, coral).
+
+
+🔧 Technical Requirements
+1. Firebase Setup
+
+Project: StudyVerse (Spark Plan - Free Forever).
+Authentication:
+
+Enable Google, Apple, Microsoft, Email/Password.
+OAuth Consent Screen: Configure for thestudyverse.pages.dev.
+
+Firestore:
+
+Collection: users (documents keyed by user.uid).
+Security Rules: Allow read/write for authenticated users only.
+javascript
+Copy
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+
+
+
+
+
+Config: Hardcoded in app.js (replace placeholders with actual Firebase config).
+2. Code Architecture
+
+State Management:
+
+Central state object in app.js tracks:
+
+Current view (dashboard/favorites/settings).
+Current tool (if any).
+User data (nickname, favorites, etc.).
+List of tools (modular: add/remove by editing state.tools array).
+
+
+Modular Tools:
+
+Each tool is defined in state.tools with:
+javascript
+Copy
+
+{
+  id: string,          // Unique ID (e.g., 'flashcards')
+  name: string,        // Display name
+  description: string, // Short description
+  icon: string,        // Emoji or SVG
+  type: string,        // 'built-in', 'iframe', 'external', 'mock-api'
+  modalContent: string,// For built-in tools (e.g., 'flashcards')
+  url: string,         // For iframe/external tools
+  color: string        // Accent color (e.g., 'blue', 'violet')
+}
+
+
+
+
+
+Dynamic Rendering:
+
+App grid and favorites grid render from state.tools and state.favorites.
+Modals open dynamically based on tool type.
+
+3. Cloudflare Pages Deployment
+
+Static Site: No server-side code.
+Domain: https://thestudyverse.pages.dev (already configured).
+Deployment Steps:
+
+Push code to a GitHub repository.
+Connect the repo to Cloudflare Pages.
+Set Project Name to thestudyverse and Production Branch to main.
+Cloudflare automatically deploys to https://thestudyverse.pages.dev.
+
+
+📜 Code Requirements
+1. login.html
+
+Structure: Split-screen layout (branding + form).
+OAuth Buttons: 3 buttons with SVG icons for Google, Apple, Microsoft.
+Email/Password Form: Inputs + "Forgot Password?" link + "Log In" button.
+Sign-Up Flow: Prompt for email/password, then nickname.
+Firebase Auth: Initialize Firebase and handle login/signup.
+2. index.html
+
+Auth Check: Redirect to login.html if not authenticated.
+Sidebar:
+
+Logo, navigation, user greeting, logout button.
+
+Main Content:
+
+App grid (rendered from state.tools).
+Favorites grid (rendered from state.favorites).
+
+Tool Cards: Clickable, with favorite toggle.
+3. settings.html
+
+Profile Section: Nickname, username, avatar inputs.
+Security Section: Change password button.
+Appearance Section: Theme toggle + accent color swatches.
+4. styles/main.css
+
+CSS Variables: All colors, spacing, fonts defined as variables.
+Themes: Dark/Light mode + 6 accent colors.
+Responsive Design: Mobile-first (sidebar collapses on small screens).
+Login Page Styles: Split-screen layout, OAuth buttons, form inputs.
+Tool Card Styles: Grid layout, hover effects, type badges.
+5. scripts/app.js
+
+Firebase Initialization: Replace placeholders with your Firebase config.
+Auth Functions:
+
+loginWithGoogle(), loginWithApple(), loginWithMicrosoft()
+showSignup() (email/password signup)
+forgotPassword()
+logout()
+handleNewUser(user) (checks for nickname, prompts if missing)
+
+User Data:
+
+Fetch/save nickname, username, avatar, favorites to Firestore.
+
+Tool Functions:
+
+renderAppGrid(), renderFavoritesGrid(), openTool(tool), toggleFavorite(toolId)
+Tool-specific modals (Flashcards, Pomodoro, etc.).
+
+View Switching: Handle navigation between dashboard/favorites/settings.
+Theme/Accent: Save to localStorage and apply to <html> attributes.
+
+📌 Deliverables
+Generate all files in a structured format (HTML/CSS/JS) with:
+
+Complete, production-ready code for:
+
+login.html
+index.html
+settings.html
+styles/main.css
+scripts/app.js
+
+Detailed comments explaining:
+
+How Firebase auth works.
+How to add/remove tools.
+How themes/accents are managed.
+
+README.md with:
+
+Firebase setup instructions.
+Cloudflare Pages deployment steps.
+How to add new tools.
+Future roadmap ideas.
+
+
+🚀 Deployment Checklist (For You)
+
+
+Set Up Firebase:
+
+Create project in Firebase Console.
+Enable Google, Apple, Microsoft, Email/Password auth.
+Set up Firestore (test mode).
+Copy firebaseConfig into app.js.
+
+
+Test Locally:
+
+Open login.html in a browser.
+Test all auth flows (OAuth, email/password, nickname setup).
+Verify dashboard and settings work.
+
+
+Deploy to Cloudflare Pages:
+
+Push code to a GitHub repo.
+Connect repo to Cloudflare Pages.
+Set domain to thestudyverse.pages.dev.
+
+
+Verify:
+
+Visit https://thestudyverse.pages.dev.
+Test login, tools, and settings.
+
+
+❓ Final Questions for You (Before Claude Generates Code)
+
+
+Firebase Config: Do you want me to include placeholder values for apiKey, authDomain, etc., or will you replace them manually?
+
+Recommendation: Include placeholders (e.g., YOUR_API_KEY) with a comment to replace them.
+
+
+Apple OAuth: Apple requires a service ID and redirect URI for production. Should we:
+
+A) Include Apple OAuth but note it may not work without Apple Developer setup?
+B) Skip Apple for now and add it later?
+Recommendation: A (include it but document the limitation).
+
+
+Avatar Uploads: Should we:
+
+A) Include a placeholder for Firebase Storage (no actual upload yet)?
+B) Skip avatars entirely for now?
+Recommendation: A (placeholder is fine).
+
+
+Password Requirements: Should we enforce strong passwords (min 8 chars, special characters)?
+
+Recommendation: Yes (Firebase does this by default for email/password).
+
+
+🎯 Example Workflow for Adding a New Tool
+
+Add to state.tools in app.js:
+javascript
+Copy
+
+{
+  id: 'new-tool',
+  name: 'New Tool',
+  description: 'A brand new tool for StudyVerse.',
+  icon: '🆕',
+  type: 'built-in', // or 'iframe', 'external', 'mock-api'
+  modalContent: 'new-tool-modal', // for built-in tools
+  url: 'https://example.com', // for iframe/external tools
+  color: 'blue' // accent color
+}
+
+
+
+
+If type: 'built-in', add its modal HTML/JS in openTool().
+Done! No other changes needed.
+
+Final Note for Claude:
+"This is a complete, production-ready implementation for StudyVerse. Prioritize modularity, readability, and ease of deployment. Every feature must work out-of-the-box when deployed to Cloudflare Pages at https://thestudyverse.pages.dev."

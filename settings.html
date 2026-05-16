@@ -12,29 +12,35 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
   <div class="app-shell">
-    <!-- Sidebar (Same as index.html) -->
+    <!-- ===== SIDEBAR (same as index.html) ===== -->
     <aside class="sidebar">
       <div class="sidebar-logo">
         <span class="logo-icon">⭐</span>
         <span class="logo-text">StudyVerse</span>
       </div>
+
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item">
           <span class="nav-icon">🏠</span>
           <span class="nav-label">Dashboard</span>
         </a>
-        <a href="#" class="nav-item" data-view="favorites">
+        <!-- Favorites nav on settings page just goes back to index -->
+        <a href="index.html#favorites" class="nav-item">
           <span class="nav-icon">⭐</span>
           <span class="nav-label">Favorites</span>
         </a>
-        <a href="#" class="nav-item active" data-view="settings">
+        <a href="settings.html" class="nav-item active">
           <span class="nav-icon">⚙️</span>
           <span class="nav-label">Settings</span>
         </a>
       </nav>
+
       <div class="sidebar-bottom">
-        <div class="user-greeting" id="userGreeting">Hi User!</div>
+        <div class="user-greeting" id="userGreeting">Hi there!</div>
         <button class="nav-item logout-btn" onclick="logout()">
           <span class="nav-icon">🔒</span>
           <span class="nav-label">Log Out</span>
@@ -42,65 +48,73 @@
       </div>
     </aside>
 
-    <!-- Main Content: Settings -->
+    <!-- ===== MAIN CONTENT: Settings ===== -->
     <main class="main-content">
       <section class="view active">
         <header class="view-header">
-          <h1 class="view-title">Settings</h1>
-          <p class="view-subtitle">Customize your StudyVerse experience.</p>
+          <div>
+            <h1 class="view-title">Settings</h1>
+            <p class="view-subtitle">Customize your StudyVerse experience.</p>
+          </div>
         </header>
 
         <div class="settings-panel">
-          <!-- Profile Section -->
+
+          <!-- ── PROFILE ── -->
           <div class="settings-group">
             <div class="settings-group-title">Profile</div>
+
             <div class="settings-row">
               <div>
                 <div class="settings-label">Nickname</div>
-                <div class="settings-desc">Your display name in StudyVerse</div>
+                <div class="settings-desc">Your display name across StudyVerse</div>
               </div>
-              <div>
-                <input type="text" id="nicknameInput" class="settings-input" placeholder="Your nickname">
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="nicknameInput" class="settings-input" placeholder="Your nickname" maxlength="24">
                 <button class="btn-accent" onclick="updateNickname()">Save</button>
               </div>
             </div>
+
             <div class="settings-row">
               <div>
                 <div class="settings-label">Username</div>
                 <div class="settings-desc">Unique identifier for your account</div>
               </div>
-              <div>
-                <input type="text" id="usernameInput" class="settings-input" placeholder="Your username">
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="usernameInput" class="settings-input" placeholder="Your username" maxlength="32">
                 <button class="btn-accent" onclick="updateUsername()">Save</button>
               </div>
             </div>
+
             <div class="settings-row">
               <div>
                 <div class="settings-label">Avatar</div>
-                <div class="settings-desc">Customize your profile picture</div>
+                <div class="settings-desc">Profile picture (Firebase Storage coming soon)</div>
               </div>
-              <div>
-                <input type="file" id="avatarInput" accept="image/*" class="settings-input">
-                <button class="btn-accent" onclick="updateAvatar()">Upload</button>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="file" id="avatarInput" accept="image/*" class="settings-input" style="width:auto; padding:6px;">
+                <button class="btn-secondary" onclick="updateAvatar()">Upload</button>
               </div>
             </div>
           </div>
 
-          <!-- Security Section -->
+          <!-- ── SECURITY ── -->
           <div class="settings-group">
             <div class="settings-group-title">Security</div>
+
             <div class="settings-row">
               <div>
                 <div class="settings-label">Change Password</div>
-                <div class="settings-desc">Update your account password</div>
+                <div class="settings-desc">Send a password-reset email to your address</div>
               </div>
-              <button class="btn-secondary" onclick="changePassword()">Change Password</button>
+              <button class="btn-secondary" onclick="changePassword()">Send Reset Email</button>
             </div>
           </div>
 
-          <!-- Theme Section -->
+          <!-- ── APPEARANCE ── -->
           <div class="settings-group">
             <div class="settings-group-title">Appearance</div>
+
             <div class="settings-row">
               <div>
                 <div class="settings-label">Theme</div>
@@ -111,27 +125,38 @@
                 <button class="theme-toggle" onclick="setTheme('light')" title="Light Mode">☀️</button>
               </div>
             </div>
+
             <div class="settings-row">
               <div>
                 <div class="settings-label">Accent Color</div>
-                <div class="settings-desc">Customize your highlight color</div>
+                <div class="settings-desc">Personalize your highlight color</div>
               </div>
               <div class="color-swatches">
-                <button class="color-swatch active" data-accent="sky" onclick="setAccent('sky')" style="background: #38bdf8;"></button>
-                <button class="color-swatch" data-accent="violet" onclick="setAccent('violet')" style="background: #a78bfa;"></button>
-                <button class="color-swatch" data-accent="emerald" onclick="setAccent('emerald')" style="background: #34d399;"></button>
-                <button class="color-swatch" data-accent="rose" onclick="setAccent('rose')" style="background: #fb7185;"></button>
-                <button class="color-swatch" data-accent="amber" onclick="setAccent('amber')" style="background: #fbbf24;"></button>
-                <button class="color-swatch" data-accent="coral" onclick="setAccent('coral')" style="background: #fb923c;"></button>
+                <button class="color-swatch" data-accent="sky"     onclick="setAccent('sky')"     style="background:#38bdf8;" title="Sky"></button>
+                <button class="color-swatch" data-accent="violet"  onclick="setAccent('violet')"  style="background:#a78bfa;" title="Violet"></button>
+                <button class="color-swatch" data-accent="emerald" onclick="setAccent('emerald')" style="background:#34d399;" title="Emerald"></button>
+                <button class="color-swatch" data-accent="rose"    onclick="setAccent('rose')"    style="background:#fb7185;" title="Rose"></button>
+                <button class="color-swatch" data-accent="amber"   onclick="setAccent('amber')"   style="background:#fbbf24;" title="Amber"></button>
+                <button class="color-swatch" data-accent="coral"   onclick="setAccent('coral')"   style="background:#fb923c;" title="Coral"></button>
               </div>
             </div>
           </div>
+
+          <!-- ── ABOUT ── -->
+          <div class="settings-group">
+            <div class="settings-group-title">About</div>
+            <div class="settings-about">
+              <p><strong>StudyVerse</strong> v1.0 — Your educational universe.</p>
+              <p>Built with vanilla HTML, CSS &amp; JavaScript. Hosted on Cloudflare Pages.</p>
+              <p>Questions or feedback? Open an issue on <a href="https://github.com" target="_blank">GitHub</a>.</p>
+            </div>
+          </div>
+
         </div>
       </section>
     </main>
-
-    <!-- Firebase Auth Script -->
-    <script src="scripts/app.js"></script>
   </div>
+
+  <script src="scripts/app.js"></script>
 </body>
 </html>
