@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-persona="default">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | StudyVerse</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar (Same as index.html) -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">⭐</span>
+        <span class="logo-text">StudyVerse</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="index.html" class="nav-item">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-view="favorites">
+          <span class="nav-icon">⭐</span>
+          <span class="nav-label">Favorites</span>
+        </a>
+        <a href="#" class="nav-item active" data-view="settings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Settings</span>
+        </a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="user-greeting" id="userGreeting">Hi User!</div>
+        <button class="nav-item logout-btn" onclick="logout()">
+          <span class="nav-icon">🔒</span>
+          <span class="nav-label">Log Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content: Settings -->
+    <main class="main-content">
+      <section class="view active">
+        <header class="view-header">
+          <h1 class="view-title">Settings</h1>
+          <p class="view-subtitle">Customize your StudyVerse experience.</p>
+        </header>
+
+        <div class="settings-panel">
+          <!-- Profile Section -->
+          <div class="settings-group">
+            <div class="settings-group-title">Profile</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Nickname</div>
+                <div class="settings-desc">Your display name in StudyVerse</div>
+              </div>
+              <div>
+                <input type="text" id="nicknameInput" class="settings-input" placeholder="Your nickname">
+                <button class="btn-accent" onclick="updateNickname()">Save</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Username</div>
+                <div class="settings-desc">Unique identifier for your account</div>
+              </div>
+              <div>
+                <input type="text" id="usernameInput" class="settings-input" placeholder="Your username">
+                <button class="btn-accent" onclick="updateUsername()">Save</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Avatar</div>
+                <div class="settings-desc">Customize your profile picture</div>
+              </div>
+              <div>
+                <input type="file" id="avatarInput" accept="image/*" class="settings-input">
+                <button class="btn-accent" onclick="updateAvatar()">Upload</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Section -->
+          <div class="settings-group">
+            <div class="settings-group-title">Security</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Change Password</div>
+                <div class="settings-desc">Update your account password</div>
+              </div>
+              <button class="btn-secondary" onclick="changePassword()">Change Password</button>
+            </div>
+          </div>
+
+          <!-- Theme Section -->
+          <div class="settings-group">
+            <div class="settings-group-title">Appearance</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Theme</div>
+                <div class="settings-desc">Dark or Light mode</div>
+              </div>
+              <div class="theme-toggle-row">
+                <button class="theme-toggle" onclick="setTheme('dark')" title="Dark Mode">🌙</button>
+                <button class="theme-toggle" onclick="setTheme('light')" title="Light Mode">☀️</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Accent Color</div>
+                <div class="settings-desc">Customize your highlight color</div>
+              </div>
+              <div class="color-swatches">
+                <button class="color-swatch active" data-accent="sky" onclick="setAccent('sky')" style="background: #38bdf8;"></button>
+                <button class="color-swatch" data-accent="violet" onclick="setAccent('violet')" style="background: #a78bfa;"></button>
+                <button class="color-swatch" data-accent="emerald" onclick="setAccent('emerald')" style="background: #34d399;"></button>
+                <button class="color-swatch" data-accent="rose" onclick="setAccent('rose')" style="background: #fb7185;"></button>
+                <button class="color-swatch" data-accent="amber" onclick="setAccent('amber')" style="background: #fbbf24;"></button>
+                <button class="color-swatch" data-accent="coral" onclick="setAccent('coral')" style="background: #fb923c;"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Firebase Auth Script -->
+    <script src="scripts/app.js"></script>
+  </div>
+</body>
+</html>
