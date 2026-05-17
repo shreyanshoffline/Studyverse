@@ -1,114 +1,263 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark" data-persona="default">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StudyVerse | Your Educational Universe</title>
-  <link rel="stylesheet" href="styles/main.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
-  <!-- Firebase SDK (compat version for simplicity) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyVerse — Your Study Universe</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Google Fonts: Sora (display) + DM Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <!-- Toast container for notifications (replaces alert()) -->
-  <div class="toast-container" id="toastContainer"></div>
 
+  <!-- ============================================================
+       APP SHELL
+       The outer layout: sidebar + main content area
+  ============================================================ -->
   <div class="app-shell">
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar">
+
+    <!-- === SIDEBAR === -->
+    <aside class="sidebar" id="sidebar">
+      <!-- Logo / Wordmark -->
       <div class="sidebar-logo">
-        <span class="logo-icon">⭐</span>
+        <div class="logo-icon" aria-hidden="true">✦</div>
         <span class="logo-text">StudyVerse</span>
       </div>
 
-      <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" data-view="dashboard">
-          <span class="nav-icon">🏠</span>
+      <!-- Primary Navigation -->
+      <nav class="sidebar-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-view="dashboard" onclick="App.navigate('dashboard')">
+          <span class="nav-icon">⊞</span>
           <span class="nav-label">Dashboard</span>
-        </a>
-        <a href="#" class="nav-item" data-view="favorites">
-          <span class="nav-icon">⭐</span>
+        </button>
+        <button class="nav-item" data-view="favorites" onclick="App.navigate('favorites')">
+          <span class="nav-icon">♡</span>
           <span class="nav-label">Favorites</span>
-        </a>
-        <a href="settings.html" class="nav-item">
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-label">Settings</span>
-        </a>
+        </button>
+        <button class="nav-item" data-view="decks" onclick="App.navigate('decks')">
+          <span class="nav-icon">⊟</span>
+          <span class="nav-label">My Decks</span>
+        </button>
       </nav>
 
-      <!-- User greeting + logout -->
+      <!-- Bottom section: theme + settings -->
       <div class="sidebar-bottom">
-        <div class="user-greeting" id="userGreeting">Hi there!</div>
-        <button class="nav-item logout-btn" onclick="logout()">
-          <span class="nav-icon">🔒</span>
-          <span class="nav-label">Log Out</span>
+        <!-- Persona / Age Toggle -->
+        <div class="persona-selector">
+          <span class="sidebar-section-label">Learning Mode</span>
+          <div class="persona-pills">
+            <button class="persona-pill active" data-persona="kids"    onclick="App.setPersona('kids')">Kids</button>
+            <button class="persona-pill"         data-persona="default" onclick="App.setPersona('default')">Teen</button>
+            <button class="persona-pill"         data-persona="adult"   onclick="App.setPersona('adult')">Adult</button>
+          </div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <div class="theme-toggle-row">
+          <span class="sidebar-section-label">Theme</span>
+          <button class="theme-toggle" id="themeToggle" onclick="App.toggleTheme()" aria-label="Toggle dark/light mode">
+            <span class="theme-icon" id="themeIcon">☾</span>
+          </button>
+        </div>
+
+        <button class="nav-item" data-view="settings" onclick="App.navigate('settings')">
+          <span class="nav-icon">⚙</span>
+          <span class="nav-label">Settings</span>
         </button>
+
+        <!-- User profile chip + sign out -->
+        <div class="sidebar-user" id="sidebarUser" style="display:none">
+          <div class="sidebar-user-avatar" id="sidebarAvatar">👤</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="sidebarNickname">Loading…</div>
+            <button class="sidebar-signout" onclick="App.signOut()">Sign out</button>
+          </div>
+        </div>
       </div>
     </aside>
 
-    <!-- ===== MAIN CONTENT ===== -->
-    <main class="main-content">
+    <!-- === MAIN CONTENT === -->
+    <main class="main-content" id="mainContent">
 
-      <!-- Dashboard View -->
-      <section id="dashboard" class="view active">
+      <!-- ── DASHBOARD VIEW ───────────────────────────────────── -->
+      <section class="view" id="view-dashboard">
         <header class="view-header">
-          <div>
-            <h1 class="view-title">Your Study Universe</h1>
-            <p class="view-subtitle">What are we studying today?</p>
+          <div class="view-header-text">
+            <h1 class="view-title" id="greetingTitle">Welcome back 👋</h1>
+            <p class="view-subtitle" id="greetingSubtitle">What are we studying today?</p>
           </div>
           <div class="header-search">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search tools..." oninput="filterTools(this.value)">
+            <input type="text" class="search-input" placeholder="Search tools…" oninput="App.filterTools(this.value)" aria-label="Search tools" />
           </div>
         </header>
-        <!-- Tool cards rendered here by app.js -->
-        <div class="tools-grid" id="appGrid"></div>
+
+        <!-- Tool Cards Grid -->
+        <div class="tools-grid" id="toolsGrid">
+          <!-- Cards injected by JS -->
+        </div>
       </section>
 
-      <!-- Favorites View -->
-      <section id="favorites" class="view hidden">
+      <!-- ── FAVORITES VIEW ──────────────────────────────────── -->
+      <section class="view hidden" id="view-favorites">
         <header class="view-header">
-          <div>
+          <div class="view-header-text">
             <h1 class="view-title">Favorites</h1>
             <p class="view-subtitle">Your pinned tools, always one click away.</p>
           </div>
         </header>
-        <!-- Favorited tool cards rendered here by app.js -->
-        <div class="tools-grid" id="favoritesGrid"></div>
+        <div class="tools-grid" id="favoritesGrid">
+          <!-- Injected by JS -->
+        </div>
+        <div class="empty-state hidden" id="favoritesEmpty">
+          <div class="empty-icon">♡</div>
+          <p>No favorites yet — click the heart on any tool card to pin it here.</p>
+        </div>
+      </section>
+
+      <!-- ── DECKS VIEW ──────────────────────────────────────── -->
+      <section class="view hidden" id="view-decks">
+        <header class="view-header">
+          <div class="view-header-text">
+            <h1 class="view-title">My Decks</h1>
+            <p class="view-subtitle">All your flashcard decks in one place.</p>
+          </div>
+          <button class="btn-primary" onclick="App.openTool('flashcards')">+ New Deck</button>
+        </header>
+        <div class="decks-list" id="decksList">
+          <!-- Injected by JS -->
+        </div>
+      </section>
+
+      <!-- ── SETTINGS VIEW ──────────────────────────────────── -->
+      <section class="view hidden" id="view-settings">
+        <header class="view-header">
+          <div class="view-header-text">
+            <h1 class="view-title">Settings</h1>
+            <p class="view-subtitle">Personalize your StudyVerse experience.</p>
+          </div>
+        </header>
+        <div class="settings-panel">
+          <div class="settings-group">
+            <h2 class="settings-group-title">Appearance</h2>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Color Theme</div>
+                <div class="settings-desc">Choose your accent color palette</div>
+              </div>
+              <div class="color-swatches" id="colorSwatches">
+                <!-- Injected by JS -->
+              </div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Dark Mode</div>
+                <div class="settings-desc">Toggle between light and dark interface</div>
+              </div>
+              <button class="toggle-switch" id="darkModeSwitch" onclick="App.toggleTheme()" aria-label="Toggle dark mode">
+                <span class="toggle-knob"></span>
+              </button>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h2 class="settings-group-title">About StudyVerse</h2>
+            <div class="settings-about">
+              <p>Version 1.0.0 — Built for learners of all ages.</p>
+              <p>Recommended deployment: <strong>Studyverse.dev</strong> via <strong>Cloudflare Pages</strong> (free, global CDN, custom domain support).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── IFRAME VIEW (for embed tools like Desmos) ────────── -->
+      <section class="view hidden" id="view-iframe">
+        <header class="view-header">
+          <button class="btn-back" onclick="App.closeIframe()" aria-label="Go back">← Back</button>
+          <h1 class="view-title" id="iframeTitle">Tool</h1>
+        </header>
+        <div class="iframe-wrapper">
+          <iframe id="toolIframe" src="" title="Embedded tool" allowfullscreen></iframe>
+        </div>
       </section>
 
     </main>
+  </div>
 
-    <!-- ===== MODAL (for built-in tools & iframes) ===== -->
-    <div class="modal-overlay hidden" id="modalOverlay">
-      <div class="modal" id="modal">
-        <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
-        <div class="modal-body" id="modalContent"></div>
+  <!-- ============================================================
+       MODAL OVERLAY
+       Used for built-in tools (Flashcards, Pomodoro)
+  ============================================================ -->
+  <div class="modal-overlay hidden" id="modalOverlay" onclick="App.closeModalOverlay(event)">
+    <div class="modal" id="modalContainer" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Tool</h2>
+        <button class="modal-close" onclick="App.closeModal()" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Dynamic content injected here -->
       </div>
     </div>
+  </div>
 
-    <!-- ===== NICKNAME SETUP MODAL (shown to new users) ===== -->
-    <div class="modal-overlay hidden" id="nicknameOverlay">
-      <div class="modal" style="max-width:420px;">
-        <div class="modal-body" style="padding:36px 32px; text-align:center;">
-          <div style="font-size:2.5rem; margin-bottom:16px;">⭐</div>
-          <h2 style="margin-bottom:8px; font-family:var(--font-display);">Welcome to StudyVerse!</h2>
-          <p style="margin-bottom:24px; color:var(--text-secondary); font-size:0.9rem;">
-            Choose a nickname to get started. This is how you'll appear across the app.
-          </p>
-          <input type="text" id="nicknameSetupInput" class="settings-input"
-            style="width:100%; margin-bottom:16px;" maxlength="24"
-            placeholder="Your nickname (e.g. Shrey)" autocomplete="off">
-          <button class="btn-accent" style="width:100%; padding:12px;" onclick="submitNickname()">
-            Let's Go 🚀
-          </button>
-        </div>
-      </div>
-    </div>
+  <!-- ============================================================
+       TOAST NOTIFICATIONS
+  ============================================================ -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-  </div><!-- /.app-shell -->
+  <!-- Firebase v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-  <script src="scripts/app.js"></script>
+  <!-- Firebase Auth Guard — redirect to login if not signed in -->
+  <script>
+    const _fbConfig = {
+      apiKey:            "REPLACE_WITH_YOUR_API_KEY",
+      authDomain:        "REPLACE_WITH_YOUR_AUTH_DOMAIN",
+      projectId:         "REPLACE_WITH_YOUR_PROJECT_ID",
+      storageBucket:     "REPLACE_WITH_YOUR_STORAGE_BUCKET",
+      messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+      appId:             "REPLACE_WITH_YOUR_APP_ID",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(_fbConfig);
+    window._fbAuth = firebase.auth();
+    window._fbDb   = firebase.firestore();
+
+    // Auth guard: redirect to login.html if user is not signed in
+    window._fbAuth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      // Load user profile from Firestore and apply preferences
+      try {
+        const doc = await window._fbDb.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          const p = doc.data();
+          // Store for app.js to read
+          window._userProfile = p;
+          // Pre-apply to <html> immediately so no flash
+          if (p.theme)   document.documentElement.setAttribute('data-theme', p.theme);
+          if (p.persona) document.documentElement.setAttribute('data-persona', p.persona);
+          // Also save into localStorage so existing app.js State.load() picks it up
+          try {
+            const existing = JSON.parse(localStorage.getItem('studyverse_state') || '{}');
+            localStorage.setItem('studyverse_state', JSON.stringify({
+              ...existing,
+              theme:   p.theme   || existing.theme   || 'dark',
+              persona: p.persona || existing.persona || 'default',
+              accent:  p.accent  || existing.accent  || 'sky',
+            }));
+          } catch(e) {}
+        }
+      } catch(e) {
+        console.warn('Could not load user profile:', e);
+      }
+    });
+  </script>
+
+  <!-- Main app script -->
+  <script src="app.js"></script>
 </body>
 </html>

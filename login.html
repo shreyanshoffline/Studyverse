@@ -1,97 +1,1396 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark" data-persona="default">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | StudyVerse</title>
-  <link rel="stylesheet" href="styles/main.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyVerse — Sign In</title>
+
+  <!-- Google Fonts: Sora + DM Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+
+  <!-- Firebase v9 compat (CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    /* ── CSS VARIABLES ─────────────────────────────────────────── */
+    :root {
+      --bg-base:       #0b0f1a;
+      --bg-surface:    #131929;
+      --bg-elevated:   #1a2235;
+      --bg-subtle:     #212d42;
+      --text-primary:  #e8edf5;
+      --text-secondary:#8a9ab5;
+      --text-muted:    #4f5f7a;
+      --accent:        #38bdf8;
+      --accent-dim:    rgba(56,189,248,0.12);
+      --accent-hover:  #7dd3fc;
+      --accent-glow:   rgba(56,189,248,0.25);
+      --success:       #34d399;
+      --danger:        #f87171;
+      --border:        rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.16);
+      --shadow-lg:     0 20px 60px rgba(0,0,0,0.6);
+    }
+
+    /* ── RESET ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ── ANIMATED STARFIELD BACKGROUND ────────────────────────── */
+    .starfield {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.6);
+      animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: 0.2; transform: scale(1); }
+      50%      { opacity: 0.9; transform: scale(1.3); }
+    }
+    .nebula {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(56,189,248,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 70%, rgba(167,139,250,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 50% 10%, rgba(52,211,153,0.04) 0%, transparent 60%);
+    }
+
+    /* ── TWO-COLUMN LAYOUT ─────────────────────────────────────── */
+    .login-root {
+      position: relative; z-index: 1;
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 860px) {
+      .login-root { grid-template-columns: 1fr; }
+      .hero-side   { display: none; }
+    }
+
+    /* ── LEFT HERO SIDE ─────────────────────────────────────────── */
+    .hero-side {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 56px;
+      position: relative;
+      border-right: 1px solid var(--border);
+    }
+
+    .hero-logo {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 56px;
+    }
+    .hero-logo-icon {
+      width: 44px; height: 44px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      display: grid; place-items: center;
+      font-size: 22px;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .hero-logo-text {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px; font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .hero-tagline {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(32px, 3.5vw, 46px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+    }
+    .hero-tagline .accent-word {
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: 16px; line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+      max-width: 420px;
+    }
+
+    /* Founder card */
+    .founder-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px 28px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      max-width: 440px;
+      position: relative;
+      overflow: hidden;
+    }
+    .founder-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(56,189,248,0.04), transparent);
+      pointer-events: none;
+    }
+    .founder-avatar-wrap {
+      flex-shrink: 0;
+    }
+    .founder-avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+    .founder-label {
+      font-size: 11px; font-weight: 600;
+      color: var(--accent); letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 4px;
+    }
+    .founder-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 17px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 6px;
+    }
+    .founder-bio {
+      font-size: 13px; line-height: 1.6;
+      color: var(--text-secondary);
+    }
+    .founder-projects {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-top: 12px;
+    }
+    .project-chip {
+      font-size: 11px; font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-strong);
+      color: var(--text-secondary);
+      letter-spacing: 0.2px;
+    }
+    .project-chip.highlight {
+      background: var(--accent-dim);
+      border-color: rgba(56,189,248,0.3);
+      color: var(--accent-hover);
+    }
+
+    /* ── RIGHT AUTH SIDE ────────────────────────────────────────── */
+    .auth-side {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 48px;
+    }
+
+    .auth-panel {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-step { display: none; }
+    .auth-step.active { display: block; animation: fadeUp 0.4s ease; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Step header */
+    .step-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--accent); margin-bottom: 10px;
+    }
+    .step-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 26px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .step-subtitle {
+      font-size: 14px; color: var(--text-secondary);
+      line-height: 1.5; margin-bottom: 32px;
+    }
+
+    /* ── AUTH BUTTONS ───────────────────────────────────────────── */
+    .auth-btn {
+      width: 100%; padding: 14px 20px;
+      border-radius: 14px; border: 1px solid var(--border-strong);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 500;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 12px;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      margin-bottom: 12px;
+    }
+    .auth-btn:hover {
+      background: var(--bg-elevated);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .auth-btn:active { transform: translateY(0); }
+    .auth-btn .btn-icon {
+      width: 20px; height: 20px; flex-shrink: 0;
+    }
+    .auth-btn.google  { border-color: rgba(234,67,53,0.3); }
+    .auth-btn.google:hover { border-color: rgba(234,67,53,0.5); }
+    .auth-btn.github  { border-color: rgba(255,255,255,0.15); }
+
+    .divider {
+      display: flex; align-items: center; gap: 16px;
+      margin: 24px 0;
+      color: var(--text-muted); font-size: 13px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── EMAIL FORM ─────────────────────────────────────────────── */
+    .form-field { margin-bottom: 16px; }
+    .form-label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+    .form-input::placeholder { color: var(--text-muted); }
+
+    .btn-primary {
+      width: 100%; padding: 14px;
+      border-radius: 14px; border: none;
+      background: var(--accent);
+      color: #0b0f1a;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      letter-spacing: 0.2px;
+      margin-top: 4px;
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5; cursor: not-allowed; transform: none;
+    }
+
+    .auth-toggle {
+      text-align: center; margin-top: 20px;
+      font-size: 13px; color: var(--text-secondary);
+    }
+    .auth-toggle a {
+      color: var(--accent); cursor: pointer;
+      text-decoration: none; font-weight: 500;
+    }
+    .auth-toggle a:hover { color: var(--accent-hover); }
+
+    .error-msg {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 10px; padding: 10px 14px;
+      color: var(--danger); font-size: 13px;
+      margin-top: 12px; display: none;
+    }
+    .error-msg.visible { display: block; animation: fadeUp 0.3s ease; }
+
+    /* ── PROGRESS DOTS ──────────────────────────────────────────── */
+    .onboarding-dots {
+      display: flex; gap: 8px; justify-content: center;
+      margin-bottom: 32px;
+    }
+    .onboarding-dot {
+      width: 8px; height: 8px; border-radius: 99px;
+      background: var(--border-strong);
+      transition: all 0.3s ease;
+    }
+    .onboarding-dot.active {
+      background: var(--accent);
+      width: 24px;
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+    .onboarding-dot.done { background: var(--success); }
+
+    /* ── NICKNAME STEP ──────────────────────────────────────────── */
+    .nickname-preview {
+      background: var(--accent-dim);
+      border: 1px solid rgba(56,189,248,0.25);
+      border-radius: 12px; padding: 14px 18px;
+      font-family: 'Sora', sans-serif;
+      font-size: 17px; font-weight: 600;
+      color: var(--accent); margin-top: 8px; text-align: center;
+      min-height: 52px; line-height: 24px;
+    }
+
+    /* ── AVATAR BUILDER ─────────────────────────────────────────── */
+    .avatar-preview-wrap {
+      display: flex; justify-content: center; margin-bottom: 28px;
+    }
+    .avatar-canvas {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+      position: relative; overflow: visible;
+    }
+    .avatar-canvas svg {
+      width: 100%; height: 100%;
+    }
+
+    .avatar-section { margin-bottom: 22px; }
+    .avatar-section-label {
+      font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-muted); margin-bottom: 10px;
+    }
+    .avatar-options {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .avatar-opt {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      border: 2px solid var(--border-strong);
+      background: var(--bg-surface);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .avatar-opt:hover {
+      border-color: var(--accent);
+      transform: scale(1.06);
+    }
+    .avatar-opt.selected {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* ── COLOR PICKER (skin tones etc) ─────────────────────────── */
+    .color-dots { display: flex; gap: 8px; flex-wrap: wrap; }
+    .color-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      cursor: pointer; border: 3px solid transparent;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .color-dot:hover { transform: scale(1.15); }
+    .color-dot.selected { border-color: var(--accent); }
+
+    /* ── STYLE PREFERENCE ───────────────────────────────────────── */
+    .persona-cards {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin-top: 8px;
+    }
+    .persona-card {
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 14px;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .persona-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .persona-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .persona-card-emoji { font-size: 32px; margin-bottom: 8px; }
+    .persona-card-label {
+      font-family: 'Sora', sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: var(--text-primary); margin-bottom: 4px;
+    }
+    .persona-card-desc { font-size: 11px; color: var(--text-muted); }
+
+    /* ── ACCENT THEME PICKER ────────────────────────────────────── */
+    .theme-swatches {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .theme-swatch {
+      width: 40px; height: 40px; border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .theme-swatch:hover { transform: scale(1.15); }
+    .theme-swatch.selected {
+      border-color: var(--text-primary);
+      box-shadow: 0 0 12px rgba(255,255,255,0.2);
+    }
+
+    /* ── KNOWL TUTORIAL ─────────────────────────────────────────── */
+    .knowl-wrap {
+      text-align: center; margin-bottom: 24px;
+    }
+    .knowl-owl {
+      display: inline-block;
+      font-size: 72px;
+      filter: drop-shadow(0 0 20px rgba(56,189,248,0.3));
+      animation: owlBob 2s ease-in-out infinite;
+    }
+    @keyframes owlBob {
+      0%,100% { transform: translateY(0) rotate(-2deg); }
+      50%      { transform: translateY(-8px) rotate(2deg); }
+    }
+    .knowl-speech {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      padding: 20px 22px;
+      margin: 0 auto;
+      max-width: 340px;
+      position: relative;
+      font-size: 14px; line-height: 1.7;
+      color: var(--text-secondary);
+      animation: fadeUp 0.4s ease;
+    }
+    .knowl-speech::before {
+      content: '';
+      position: absolute;
+      top: -10px; left: 50%; transform: translateX(-50%);
+      border: 10px solid transparent;
+      border-bottom-color: var(--border-strong);
+    }
+    .knowl-speech::after {
+      content: '';
+      position: absolute;
+      top: -8px; left: 50%; transform: translateX(-50%);
+      border: 9px solid transparent;
+      border-bottom-color: var(--bg-surface);
+    }
+    .knowl-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px; font-weight: 700;
+      color: var(--accent); margin-bottom: 4px;
+    }
+    .knowl-tip-num {
+      font-size: 11px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+    }
+    .knowl-nav {
+      display: flex; gap: 10px; justify-content: center; margin-top: 20px;
+    }
+    .knowl-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--border-strong); cursor: pointer;
+      transition: background 0.2s;
+    }
+    .knowl-dot.active { background: var(--accent); }
+
+    .btn-secondary {
+      flex: 1; padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .step-actions {
+      display: flex; gap: 10px; margin-top: 28px;
+    }
+    .step-actions .btn-primary { flex: 2; margin-top: 0; }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #0b0f1a;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Email sub-steps (sign in / create account) */
+    .email-mode-toggle {
+      display: flex; gap: 0; margin-bottom: 24px;
+      background: var(--bg-subtle);
+      border-radius: 10px; padding: 3px;
+    }
+    .mode-tab {
+      flex: 1; padding: 8px;
+      border: none; border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .mode-tab.active {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Step back button */
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--text-muted);
+      background: none; border: none; cursor: pointer;
+      padding: 0; margin-bottom: 24px;
+      transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--text-primary); }
+
+    /* Scrollable sections */
+    .avatar-scroll { max-height: 400px; overflow-y: auto; padding-right: 4px; }
+    .avatar-scroll::-webkit-scrollbar { width: 4px; }
+    .avatar-scroll::-webkit-scrollbar-track { background: transparent; }
+    .avatar-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+  </style>
 </head>
-<body class="login-page">
+<body>
 
-  <!-- Toast container -->
-  <div class="toast-container" id="toastContainer"></div>
+  <!-- Starfield -->
+  <div class="starfield" id="starfield"></div>
+  <div class="nebula"></div>
 
-  <div class="login-container">
+  <!-- Main layout -->
+  <div class="login-root">
 
-    <!-- ===== LEFT: Branding ===== -->
-    <div class="login-branding">
-      <div class="logo">
-        <span class="logo-icon">⭐</span>
-        <span class="logo-text">StudyVerse</span>
-      </div>
-      <p class="tagline">Your educational universe. Log in to access tools, track progress, and learn without limits.</p>
-    </div>
-
-    <!-- ===== RIGHT: Login Form ===== -->
-    <div class="login-form">
-      <h1 id="formTitle">Welcome to StudyVerse</h1>
-
-      <!-- OAuth Buttons -->
-      <div class="oauth-buttons" id="oauthSection">
-        <button class="oauth-button google" onclick="loginWithGoogle()">
-          <!-- Google SVG icon -->
-          <svg class="oauth-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          <span>Continue with Google</span>
-        </button>
-
-        <button class="oauth-button apple" onclick="loginWithApple()">
-          <!-- Apple SVG icon -->
-          <svg class="oauth-icon" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg">
-            <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.7 0 663 0 541.8c0-207.2 133.4-316.9 264.8-316.9 70.1 0 128.6 42.5 170.9 42.5 40.8 0 109.9-45.7 188.3-45.7 22.8 0 107.7 2.6 167.5 100.3zm-234.6-108.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z" fill="#fff"/>
-          </svg>
-          <span>Continue with Apple</span>
-        </button>
-
-        <button class="oauth-button microsoft" onclick="loginWithMicrosoft()">
-          <!-- Microsoft SVG icon -->
-          <svg class="oauth-icon" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
-            <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-            <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-            <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-            <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-          </svg>
-          <span>Continue with Microsoft</span>
-        </button>
+    <!-- ══ LEFT HERO SIDE ══════════════════════════════════════════ -->
+    <div class="hero-side">
+      <div class="hero-logo">
+        <div class="hero-logo-icon">✦</div>
+        <span class="hero-logo-text">StudyVerse</span>
       </div>
 
-      <div class="divider" id="dividerEl"><span>or</span></div>
+      <h1 class="hero-tagline">
+        Your <span class="accent-word">Study</span><br>
+        Universe<br>Awaits.
+      </h1>
 
-      <!-- Email/Password Form (Login mode) -->
-      <div id="emailSection">
-        <div id="loginForm">
-          <input type="email" id="email" class="auth-input" placeholder="Email" autocomplete="email" required>
-          <input type="password" id="password" class="auth-input" placeholder="Password" autocomplete="current-password" required>
-          <a href="#" class="forgot-password" onclick="event.preventDefault(); forgotPassword()">Forgot Password?</a>
-          <button class="login-button" onclick="emailLogin()">Log In</button>
-        </div>
-
-        <!-- Sign-up Form (hidden by default) -->
-        <div id="signupForm" style="display:none;">
-          <input type="email" id="signupEmail" class="auth-input" placeholder="Email" autocomplete="email" required>
-          <input type="password" id="signupPassword" class="auth-input" placeholder="Password (min 8 chars)" autocomplete="new-password" required>
-          <input type="password" id="signupPasswordConfirm" class="auth-input" placeholder="Confirm Password" autocomplete="new-password" required>
-          <button class="login-button" onclick="emailSignup()">Create Account</button>
-        </div>
-      </div>
-
-      <!-- Toggle between login / signup -->
-      <p class="signup-prompt" id="formTogglePrompt">
-        New here? <a href="#" onclick="event.preventDefault(); showSignup()">Sign Up</a>
+      <p class="hero-desc">
+        One beautiful hub for every tool you need to learn smarter —
+        flashcards, timers, trackers, and more. Built for curious minds of all ages.
       </p>
+
+      <!-- Founder card -->
+      <div class="founder-card">
+        <div class="founder-avatar-wrap">
+          <div class="founder-avatar">🚀</div>
+        </div>
+        <div>
+          <div class="founder-label">Built by</div>
+          <div class="founder-name">Shreyansh Patra</div>
+          <div class="founder-bio">
+            14-year-old developer & game maker. Already shipped three games from scratch.
+          </div>
+          <div class="founder-projects">
+            <span class="project-chip highlight">🏎 F1 Top-Down Racer</span>
+            <span class="project-chip highlight">👾 Space Invaders+</span>
+            <span class="project-chip highlight">🔫 2D Polygon Shooter</span>
+            <span class="project-chip">🎓 StudyVerse</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-  </div>
+    <!-- ══ RIGHT AUTH SIDE ═════════════════════════════════════════ -->
+    <div class="auth-side">
+      <div class="auth-panel" id="authPanel">
 
-  <script src="scripts/app.js"></script>
+        <!-- ── STEP 0: SIGN IN ─────────────────────────────────── -->
+        <div class="auth-step active" id="step-signin">
+          <div class="step-label">Welcome</div>
+          <h2 class="step-title">Sign in to StudyVerse</h2>
+          <p class="step-subtitle">Join thousands of students building better study habits.</p>
+
+          <!-- Google -->
+          <button class="auth-btn google" onclick="Auth.signInGoogle()">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+          </button>
+
+          <!-- GitHub -->
+          <button class="auth-btn github" onclick="Auth.signInGithub()">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+            Continue with GitHub
+          </button>
+
+          <div class="divider">or use email</div>
+
+          <!-- Email -->
+          <button class="auth-btn" onclick="Auth.showEmail()">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="3"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/>
+            </svg>
+            Continue with Email
+          </button>
+
+          <div id="signinError" class="error-msg"></div>
+        </div>
+
+        <!-- ── STEP 0b: EMAIL AUTH ──────────────────────────────── -->
+        <div class="auth-step" id="step-email">
+          <button class="back-btn" onclick="Auth.back('step-signin')">← Back</button>
+          <div class="step-label">Email</div>
+          <h2 class="step-title">Let's get you in</h2>
+
+          <div class="email-mode-toggle">
+            <button class="mode-tab active" id="tabSignin" onclick="Auth.setEmailMode('signin')">Sign In</button>
+            <button class="mode-tab" id="tabSignup" onclick="Auth.setEmailMode('signup')">Create Account</button>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Email</label>
+            <input class="form-input" type="email" id="emailInput" placeholder="you@email.com" />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Password</label>
+            <input class="form-input" type="password" id="passwordInput" placeholder="••••••••" />
+          </div>
+          <div class="form-field" id="confirmWrap" style="display:none">
+            <label class="form-label">Confirm Password</label>
+            <input class="form-input" type="password" id="confirmInput" placeholder="••••••••" />
+          </div>
+
+          <button class="btn-primary" id="emailSubmitBtn" onclick="Auth.submitEmail()">Sign In</button>
+          <div id="emailError" class="error-msg"></div>
+        </div>
+
+        <!-- ── STEP 1: NICKNAME ────────────────────────────────── -->
+        <div class="auth-step" id="step-nickname">
+          <div class="onboarding-dots" id="onboardingDots"></div>
+          <div class="step-label">Step 1 of 4</div>
+          <h2 class="step-title">What's your name?</h2>
+          <p class="step-subtitle">Pick a nickname — this is what everyone will see you as in StudyVerse.</p>
+
+          <div class="form-field">
+            <label class="form-label">Nickname</label>
+            <input class="form-input" type="text" id="nicknameInput"
+              placeholder="e.g. StarLearner42"
+              maxlength="20"
+              oninput="Onboarding.previewNickname(this.value)" />
+          </div>
+          <div class="nickname-preview" id="nicknamePreview">Your nickname will appear here…</div>
+
+          <div class="step-actions">
+            <button class="btn-primary" onclick="Onboarding.saveNickname()">Next →</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: AVATAR ──────────────────────────────────── -->
+        <div class="auth-step" id="step-avatar">
+          <div class="onboarding-dots" id="onboardingDots2"></div>
+          <div class="step-label">Step 2 of 4</div>
+          <h2 class="step-title">Build your avatar</h2>
+          <p class="step-subtitle">Mix and match classroom supplies into your unique face.</p>
+
+          <div class="avatar-preview-wrap">
+            <div class="avatar-canvas" id="avatarCanvas">
+              <svg viewBox="0 0 120 120" id="avatarSVG"></svg>
+            </div>
+          </div>
+
+          <div class="avatar-scroll">
+            <!-- Skin tone -->
+            <div class="avatar-section">
+              <div class="avatar-section-label">Skin Tone</div>
+              <div class="color-dots" id="skinColors"></div>
+            </div>
+            <!-- Eyes -->
+            <div class="avatar-section">
+              <div class="avatar-section-label">Eyes</div>
+              <div class="avatar-options" id="eyeOptions"></div>
+            </div>
+            <!-- Mouth -->
+            <div class="avatar-section">
+              <div class="avatar-section-label">Mouth</div>
+              <div class="avatar-options" id="mouthOptions"></div>
+            </div>
+            <!-- Hat / Hair -->
+            <div class="avatar-section">
+              <div class="avatar-section-label">Hat / Hair</div>
+              <div class="avatar-options" id="hatOptions"></div>
+            </div>
+            <!-- Accessory -->
+            <div class="avatar-section">
+              <div class="avatar-section-label">Accessory</div>
+              <div class="avatar-options" id="accOptions"></div>
+            </div>
+          </div>
+
+          <div class="step-actions">
+            <button class="btn-secondary" onclick="Onboarding.back('step-nickname')">← Back</button>
+            <button class="btn-primary" onclick="Onboarding.saveAvatar()">Next →</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 3: PERSONA ─────────────────────────────────── -->
+        <div class="auth-step" id="step-persona">
+          <div class="onboarding-dots" id="onboardingDots3"></div>
+          <div class="step-label">Step 3 of 4</div>
+          <h2 class="step-title">How do you like to learn?</h2>
+          <p class="step-subtitle">This tweaks the whole vibe of StudyVerse just for you. You can always change it later.</p>
+
+          <div class="persona-cards">
+            <div class="persona-card" id="persona-kids" onclick="Onboarding.selectPersona('kids')">
+              <div class="persona-card-emoji">🌈</div>
+              <div class="persona-card-label">Kids</div>
+              <div class="persona-card-desc">Big icons, fun vibes, simple words</div>
+            </div>
+            <div class="persona-card" id="persona-default" onclick="Onboarding.selectPersona('default')">
+              <div class="persona-card-emoji">⚡</div>
+              <div class="persona-card-label">Teen</div>
+              <div class="persona-card-desc">Bold, fast, and to the point</div>
+            </div>
+            <div class="persona-card" id="persona-adult" onclick="Onboarding.selectPersona('adult')">
+              <div class="persona-card-emoji">🎓</div>
+              <div class="persona-card-label">Adult</div>
+              <div class="persona-card-desc">Dense, powerful, no-nonsense</div>
+            </div>
+          </div>
+
+          <div class="step-actions" style="margin-top:32px">
+            <button class="btn-secondary" onclick="Onboarding.back('step-avatar')">← Back</button>
+            <button class="btn-primary" onclick="Onboarding.savePersona()">Next →</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 4: COLOR THEME ─────────────────────────────── -->
+        <div class="auth-step" id="step-theme">
+          <div class="onboarding-dots" id="onboardingDots4"></div>
+          <div class="step-label">Step 4 of 4</div>
+          <h2 class="step-title">Pick your palette</h2>
+          <p class="step-subtitle">Soft, beautiful accents — no neon here. Pick what feels like <em>you</em>.</p>
+
+          <div class="theme-swatches" id="themeSwatches"></div>
+
+          <!-- Dark/Light toggle -->
+          <div style="margin-top:28px; display:flex; align-items:center; gap:14px;">
+            <span style="font-size:14px;color:var(--text-secondary)">Interface Mode</span>
+            <div class="email-mode-toggle" style="margin-bottom:0;flex:1">
+              <button class="mode-tab active" id="modeDark" onclick="Onboarding.setMode('dark')">🌙 Dark</button>
+              <button class="mode-tab" id="modeLight" onclick="Onboarding.setMode('light')">☀️ Light</button>
+            </div>
+          </div>
+
+          <div class="step-actions" style="margin-top:32px">
+            <button class="btn-secondary" onclick="Onboarding.back('step-persona')">← Back</button>
+            <button class="btn-primary" onclick="Onboarding.saveTheme()">Finish Setup ✓</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 5: KNOWL TUTORIAL ──────────────────────────── -->
+        <div class="auth-step" id="step-tutorial">
+          <div class="knowl-wrap">
+            <div class="knowl-owl">🦉</div>
+          </div>
+          <div class="knowl-speech" id="knowlSpeech">
+            <div class="knowl-name">Hi! I'm Knowl 🦉</div>
+            <div class="knowl-tip-num" id="knowlTipNum">Tip 1 of 5</div>
+            <div id="knowlTipText">
+              I'm your personal study buddy inside StudyVerse! I know where everything is, and I'll help you get the most out of this app. Let's do a quick tour!
+            </div>
+          </div>
+          <div class="knowl-nav" id="knowlDots"></div>
+
+          <div class="step-actions" style="margin-top:24px">
+            <button class="btn-secondary" id="knowlPrevBtn" onclick="Tutorial.prev()" style="display:none">← Prev</button>
+            <button class="btn-primary" id="knowlNextBtn" onclick="Tutorial.next()">Next Tip →</button>
+          </div>
+        </div>
+
+      </div><!-- /authPanel -->
+    </div><!-- /auth-side -->
+
+  </div><!-- /login-root -->
+
+
+  <script>
+    /* ════════════════════════════════════════════════════════
+       FIREBASE CONFIG
+       Replace this object with your actual Firebase project config.
+       Firebase Console → Project Settings → Your apps → Config
+    ════════════════════════════════════════════════════════ */
+    const firebaseConfig = {
+      apiKey:            "REPLACE_WITH_YOUR_API_KEY",
+      authDomain:        "REPLACE_WITH_YOUR_AUTH_DOMAIN",
+      projectId:         "REPLACE_WITH_YOUR_PROJECT_ID",
+      storageBucket:     "REPLACE_WITH_YOUR_STORAGE_BUCKET",
+      messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+      appId:             "REPLACE_WITH_YOUR_APP_ID",
+    };
+
+    // Init Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    /* ────────────────────────────────────────────────────── */
+    /* On auth state change: if signed in + has profile →    */
+    /* go to app. If signed in + no profile → onboarding.   */
+    /* ────────────────────────────────────────────────────── */
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) return; // stay on login page
+      try {
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists && doc.data().onboardingComplete) {
+          window.location.href = 'index.html';
+        } else {
+          // Transition to onboarding
+          LoginUI.showOnboarding();
+        }
+      } catch (e) {
+        console.error('Firestore check failed:', e);
+        LoginUI.showOnboarding();
+      }
+    });
+
+    /* ════════════════════════════════════════════════════════
+       STARFIELD
+    ════════════════════════════════════════════════════════ */
+    (function buildStars() {
+      const sf = document.getElementById('starfield');
+      for (let i = 0; i < 80; i++) {
+        const s = document.createElement('div');
+        s.className = 'star';
+        const size = Math.random() * 2.5 + 0.5;
+        s.style.cssText = `
+          width:${size}px; height:${size}px;
+          left:${Math.random()*100}%; top:${Math.random()*100}%;
+          --d:${(Math.random()*4+2).toFixed(1)}s;
+          --delay:-${(Math.random()*4).toFixed(1)}s;
+        `;
+        sf.appendChild(s);
+      }
+    })();
+
+    /* ════════════════════════════════════════════════════════
+       LOGIN UI — step switching
+    ════════════════════════════════════════════════════════ */
+    const LoginUI = {
+      showStep(id) {
+        document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
+        const el = document.getElementById(id);
+        if (el) el.classList.add('active');
+      },
+      showOnboarding() {
+        Onboarding.init();
+        this.showStep('step-nickname');
+      },
+    };
+
+    /* ════════════════════════════════════════════════════════
+       AUTH — sign in handlers
+    ════════════════════════════════════════════════════════ */
+    const Auth = {
+      _showError(elId, msg) {
+        const el = document.getElementById(elId);
+        el.textContent = msg; el.classList.add('visible');
+        setTimeout(() => el.classList.remove('visible'), 5000);
+      },
+      _hideError(elId) {
+        document.getElementById(elId).classList.remove('visible');
+      },
+      _setLoading(btnId, loading) {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        btn.disabled = loading;
+        btn.innerHTML = loading
+          ? '<span class="spinner"></span> Signing in…'
+          : 'Sign In';
+      },
+
+      async signInGoogle() {
+        this._hideError('signinError');
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try {
+          await auth.signInWithPopup(provider);
+        } catch(e) {
+          this._showError('signinError', this._friendly(e.code));
+        }
+      },
+
+      async signInGithub() {
+        this._hideError('signinError');
+        const provider = new firebase.auth.GithubAuthProvider();
+        try {
+          await auth.signInWithPopup(provider);
+        } catch(e) {
+          this._showError('signinError', this._friendly(e.code));
+        }
+      },
+
+      showEmail() {
+        LoginUI.showStep('step-email');
+        this._mode = 'signin';
+      },
+
+      back(step) {
+        LoginUI.showStep(step);
+      },
+
+      setEmailMode(mode) {
+        this._mode = mode;
+        document.getElementById('tabSignin').classList.toggle('active', mode === 'signin');
+        document.getElementById('tabSignup').classList.toggle('active', mode === 'signup');
+        document.getElementById('confirmWrap').style.display = mode === 'signup' ? 'block' : 'none';
+        document.getElementById('emailSubmitBtn').textContent = mode === 'signin' ? 'Sign In' : 'Create Account';
+      },
+
+      _mode: 'signin',
+
+      async submitEmail() {
+        const email    = document.getElementById('emailInput').value.trim();
+        const password = document.getElementById('passwordInput').value;
+        const confirm  = document.getElementById('confirmInput').value;
+
+        if (!email || !password) {
+          this._showError('emailError', 'Please fill in all fields.'); return;
+        }
+        if (this._mode === 'signup' && password !== confirm) {
+          this._showError('emailError', 'Passwords do not match.'); return;
+        }
+        if (this._mode === 'signup' && password.length < 6) {
+          this._showError('emailError', 'Password must be at least 6 characters.'); return;
+        }
+
+        const btn = document.getElementById('emailSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Working…';
+
+        try {
+          if (this._mode === 'signin') {
+            await auth.signInWithEmailAndPassword(email, password);
+          } else {
+            await auth.createUserWithEmailAndPassword(email, password);
+          }
+        } catch(e) {
+          this._showError('emailError', this._friendly(e.code));
+          btn.disabled = false;
+          btn.textContent = this._mode === 'signin' ? 'Sign In' : 'Create Account';
+        }
+      },
+
+      _friendly(code) {
+        const map = {
+          'auth/user-not-found':      'No account found with that email.',
+          'auth/wrong-password':      'Incorrect password. Try again.',
+          'auth/email-already-in-use':'That email is already registered.',
+          'auth/invalid-email':       'Please enter a valid email address.',
+          'auth/popup-closed-by-user':'Sign-in window was closed. Try again.',
+          'auth/cancelled-popup-request':'Another sign-in is in progress.',
+          'auth/network-request-failed':'Network error. Check your connection.',
+          'auth/account-exists-with-different-credential': 'This email is registered with a different provider.',
+        };
+        return map[code] || 'Something went wrong. Please try again.';
+      },
+    };
+
+    /* ════════════════════════════════════════════════════════
+       AVATAR BUILDER DATA
+    ════════════════════════════════════════════════════════ */
+    const SKIN_TONES = [
+      { id: 's1', hex: '#FDDBB4', label: 'Warm Beige'    },
+      { id: 's2', hex: '#F2C28A', label: 'Light Brown'   },
+      { id: 's3', hex: '#C68642', label: 'Medium Brown'  },
+      { id: 's4', hex: '#8D5524', label: 'Deep Brown'    },
+      { id: 's5', hex: '#FADBC8', label: 'Fair Peach'    },
+      { id: 's6', hex: '#FFEBCD', label: 'Pale'          },
+    ];
+
+    // Eye expressions using SVG paths drawn into the face
+    const EYES = [
+      { id: 'e1', emoji: '👀', label: 'Normal',   draw: (x,y) => `<circle cx="${x-8}" cy="${y}" r="5" fill="#1a1a2e"/><circle cx="${x+8}" cy="${y}" r="5" fill="#1a1a2e"/><circle cx="${x-6}" cy="${y-1.5}" r="1.5" fill="white"/><circle cx="${x+10}" cy="${y-1.5}" r="1.5" fill="white"/>` },
+      { id: 'e2', emoji: '😊', label: 'Happy',    draw: (x,y) => `<path d="M${x-13},${y} Q${x-8},${y+5} ${x-3},${y}" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M${x+3},${y} Q${x+8},${y+5} ${x+13},${y}" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>` },
+      { id: 'e3', emoji: '😲', label: 'Wide',     draw: (x,y) => `<ellipse cx="${x-8}" cy="${y}" rx="6" ry="7" fill="#1a1a2e"/><ellipse cx="${x+8}" cy="${y}" rx="6" ry="7" fill="#1a1a2e"/><circle cx="${x-6}" cy="${y-2}" r="2" fill="white"/><circle cx="${x+10}" cy="${y-2}" r="2" fill="white"/>` },
+      { id: 'e4', emoji: '😑', label: 'Tired',    draw: (x,y) => `<line x1="${x-14}" y1="${y}" x2="${x-2}" y2="${y}" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/><line x1="${x+2}" y1="${y}" x2="${x+14}" y2="${y}" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>` },
+      { id: 'e5', emoji: '🤓', label: 'Glasses',  draw: (x,y) => `<circle cx="${x-8}" cy="${y}" r="6" fill="none" stroke="#38bdf8" stroke-width="2"/><circle cx="${x+8}" cy="${y}" r="6" fill="none" stroke="#38bdf8" stroke-width="2"/><line x1="${x-2}" y1="${y}" x2="${x+2}" y2="${y}" stroke="#38bdf8" stroke-width="2"/><circle cx="${x-8}" cy="${y}" r="4" fill="#1a1a2e" fill-opacity="0.7"/>  <circle cx="${x+8}" cy="${y}" r="4" fill="#1a1a2e" fill-opacity="0.7"/>` },
+      { id: 'e6', emoji: '😌', label: 'Closed',   draw: (x,y) => `<path d="M${x-13},${y-2} Q${x-8},${y+4} ${x-3},${y-2}" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M${x+3},${y-2} Q${x+8},${y+4} ${x+13},${y-2}" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>` },
+      { id: 'e7', emoji: '🌟', label: 'Stars',    draw: (x,y) => `<text x="${x-12}" y="${y+4}" font-size="12" text-anchor="middle">⭐</text><text x="${x+12}" y="${y+4}" font-size="12" text-anchor="middle">⭐</text>` },
+    ];
+
+    const MOUTHS = [
+      { id: 'm1', emoji: '😊', label: 'Smile',    draw: (x,y) => `<path d="M${x-14},${y} Q${x},${y+14} ${x+14},${y}" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>` },
+      { id: 'm2', emoji: '😐', label: 'Straight', draw: (x,y) => `<line x1="${x-12}" y1="${y}" x2="${x+12}" y2="${y}" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>` },
+      { id: 'm3', emoji: '😮', label: 'Open',     draw: (x,y) => `<ellipse cx="${x}" cy="${y+3}" rx="10" ry="8" fill="#c0392b"/><ellipse cx="${x}" cy="${y+3}" rx="7" ry="5" fill="#922B21"/>` },
+      { id: 'm4', emoji: '😆', label: 'Grin',     draw: (x,y) => `<path d="M${x-14},${y} Q${x},${y+16} ${x+14},${y}" stroke="#1a1a2e" stroke-width="2.5" fill="#e74c3c" stroke-linecap="round"/><path d="M${x-10},${y} Q${x},${y+10} ${x+10},${y}" fill="white"/>` },
+      { id: 'm5', emoji: '😟', label: 'Frown',    draw: (x,y) => `<path d="M${x-14},${y+8} Q${x},${y-4} ${x+14},${y+8}" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>` },
+      { id: 'm6', emoji: '😏', label: 'Smirk',    draw: (x,y) => `<path d="M${x-4},${y+2} Q${x+6},${y-2} ${x+14},${y+4}" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>` },
+      { id: 'm7', emoji: '🤐', label: 'Zip',      draw: (x,y) => `<line x1="${x-12}" y1="${y+1}" x2="${x+12}" y2="${y+1}" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/><circle cx="${x-8}" cy="${y+1}" r="2.5" fill="#38bdf8"/><circle cx="${x}" cy="${y+1}" r="2.5" fill="#a78bfa"/><circle cx="${x+8}" cy="${y+1}" r="2.5" fill="#34d399"/>` },
+    ];
+
+    const HATS = [
+      { id: 'h0', emoji: '—',   label: 'None',       drawHat: () => '' },
+      { id: 'h1', emoji: '🎓',  label: 'Grad Cap',   drawHat: (x,y,r) => `<rect x="${x-r+4}" y="${y-r-10}" width="${(r-4)*2}" height="8" rx="2" fill="#1a1a2e"/><rect x="${x-r-6}" y="${y-r-12}" width="${(r+6)*2}" height="6" rx="3" fill="#2c3e50"/><line x1="${x+r+2}" y1="${y-r-8}" x2="${x+r+14}" y2="${y-r+2}" stroke="#f1c40f" stroke-width="2.5"/>` },
+      { id: 'h2', emoji: '✏️',  label: 'Pencil Hair', drawHat: (x,y,r) => `<line x1="${x-10}" y1="${y-r-2}" x2="${x-4}" y2="${y-r-22}" stroke="#f39c12" stroke-width="5" stroke-linecap="round"/><line x1="${x+4}" y1="${y-r-2}" x2="${x+10}" y2="${y-r-22}" stroke="#f39c12" stroke-width="5" stroke-linecap="round"/><polygon points="${x-4},${y-r-22} ${x+10},${y-r-22} ${x+3},${y-r-30}" fill="#e74c3c"/>` },
+      { id: 'h3', emoji: '📚',  label: 'Book Stack',  drawHat: (x,y,r) => `<rect x="${x-r+4}" y="${y-r-18}" width="${(r-4)*2}" height="6" rx="2" fill="#e74c3c"/><rect x="${x-r+2}" y="${y-r-12}" width="${(r-2)*2}" height="6" rx="2" fill="#3498db"/><rect x="${x-r}" y="${y-r-6}" width="${r*2}" height="6" rx="2" fill="#2ecc71"/>` },
+      { id: 'h4', emoji: '🎨',  label: 'Beret',       drawHat: (x,y,r) => `<ellipse cx="${x}" cy="${y-r}" rx="${r+4}" ry="8" fill="#9b59b6"/><circle cx="${x+8}" cy="${y-r-4}" r="4" fill="#8e44ad"/>` },
+      { id: 'h5', emoji: '🖊️', label: 'Crown',        drawHat: (x,y,r) => `<path d="M${x-r+2},${y-r-2} L${x-r+6},${y-r-18} L${x},${y-r-10} L${x+r-6},${y-r-18} L${x+r-2},${y-r-2} Z" fill="#f1c40f" stroke="#e67e22" stroke-width="1.5"/>` },
+      { id: 'h6', emoji: '🎒',  label: 'Curly Hair',  drawHat: (x,y,r) => `<path d="M${x-r},${y-r+4} Q${x-r-8},${y-r-20} ${x-r+10},${y-r-16} Q${x-r},${y-r-28} ${x+4},${y-r-20} Q${x+r-4},${y-r-28} ${x+r},${y-r-14} Q${x+r+6},${y-r-20} ${x+r},${y-r+4}" fill="#c0392b"/>` },
+    ];
+
+    const ACCESSORIES = [
+      { id: 'a0', emoji: '—',  label: 'None',        drawAcc: () => '' },
+      { id: 'a1', emoji: '📎', label: 'Paperclip',   drawAcc: (x,y) => `<path d="M${x+28},${y-10} Q${x+38},${y-20} ${x+34},${y+8} Q${x+30},${y+30} ${x+18},${y+28}" stroke="#95a5a6" stroke-width="3" fill="none" stroke-linecap="round"/>` },
+      { id: 'a2', emoji: '🔬', label: 'Monocle',     drawAcc: (x,y) => `<circle cx="${x+18}" cy="${y-18}" r="10" fill="none" stroke="#f39c12" stroke-width="2.5"/><circle cx="${x+18}" cy="${y-18}" r="6" fill="rgba(56,189,248,0.15)"/><line x1="${x+28}" y1="${y-10}" x2="${x+34}" y2="${y+4}" stroke="#f39c12" stroke-width="2"/>` },
+      { id: 'a3', emoji: '🎯', label: 'Star Sticker', drawAcc: (x,y) => `<text x="${x+28}" y="${y-12}" font-size="16">⭐</text>` },
+      { id: 'a4', emoji: '🖍️', label: 'Crayon',      drawAcc: (x,y) => `<rect x="${x-40}" y="${y+10}" width="16" height="28" rx="3" fill="#e74c3c"/><polygon points="${x-40},${y+38} ${x-24},${y+38} ${x-32},${y+50}" fill="#c0392b"/>` },
+    ];
+
+    /* ════════════════════════════════════════════════════════
+       ONBOARDING STATE & CONTROLLER
+    ════════════════════════════════════════════════════════ */
+    const Onboarding = {
+      data: {
+        nickname: '',
+        avatar: { skin: 's1', eye: 'e1', mouth: 'm1', hat: 'h0', acc: 'a0' },
+        persona: 'default',
+        accent:  'sky',
+        theme:   'dark',
+      },
+
+      init() {
+        this._buildDots();
+        this._buildAvatarOptions();
+        this._buildThemeSwatches();
+        this.renderAvatar();
+      },
+
+      _buildDots() {
+        ['','2','3','4'].forEach((suffix, stepIdx) => {
+          const el = document.getElementById('onboardingDots' + suffix);
+          if (!el) return;
+          el.innerHTML = [0,1,2,3].map(i =>
+            `<div class="onboarding-dot ${i === stepIdx ? 'active' : i < stepIdx ? 'done' : ''}"></div>`
+          ).join('');
+        });
+      },
+
+      _buildAvatarOptions() {
+        // Skin tones
+        document.getElementById('skinColors').innerHTML = SKIN_TONES.map(s =>
+          `<div class="color-dot ${s.id === this.data.avatar.skin ? 'selected' : ''}"
+            style="background:${s.hex}"
+            title="${s.label}"
+            onclick="Onboarding.setAvatarPart('skin','${s.id}')"></div>`
+        ).join('');
+
+        // Eyes
+        document.getElementById('eyeOptions').innerHTML = EYES.map(e =>
+          `<div class="avatar-opt ${e.id === this.data.avatar.eye ? 'selected' : ''}"
+            title="${e.label}"
+            onclick="Onboarding.setAvatarPart('eye','${e.id}')">${e.emoji}</div>`
+        ).join('');
+
+        // Mouths
+        document.getElementById('mouthOptions').innerHTML = MOUTHS.map(m =>
+          `<div class="avatar-opt ${m.id === this.data.avatar.mouth ? 'selected' : ''}"
+            title="${m.label}"
+            onclick="Onboarding.setAvatarPart('mouth','${m.id}')">${m.emoji}</div>`
+        ).join('');
+
+        // Hats
+        document.getElementById('hatOptions').innerHTML = HATS.map(h =>
+          `<div class="avatar-opt ${h.id === this.data.avatar.hat ? 'selected' : ''}"
+            title="${h.label}"
+            onclick="Onboarding.setAvatarPart('hat','${h.id}')">${h.emoji}</div>`
+        ).join('');
+
+        // Accessories
+        document.getElementById('accOptions').innerHTML = ACCESSORIES.map(a =>
+          `<div class="avatar-opt ${a.id === this.data.avatar.acc ? 'selected' : ''}"
+            title="${a.label}"
+            onclick="Onboarding.setAvatarPart('acc','${a.id}')">${a.emoji}</div>`
+        ).join('');
+      },
+
+      _buildThemeSwatches() {
+        const THEMES = [
+          { name: 'sky',     hex: '#38bdf8', label: 'Sky Blue'  },
+          { name: 'violet',  hex: '#a78bfa', label: 'Violet'    },
+          { name: 'emerald', hex: '#34d399', label: 'Emerald'   },
+          { name: 'rose',    hex: '#fb7185', label: 'Rose'      },
+          { name: 'amber',   hex: '#fbbf24', label: 'Amber'     },
+          { name: 'coral',   hex: '#fb923c', label: 'Coral'     },
+          { name: 'lavender',hex: '#c4b5fd', label: 'Lavender'  },
+          { name: 'mint',    hex: '#6ee7b7', label: 'Mint'      },
+          { name: 'peach',   hex: '#fca5a5', label: 'Peach'     },
+        ];
+        document.getElementById('themeSwatches').innerHTML = THEMES.map(t =>
+          `<div class="theme-swatch ${t.name === this.data.accent ? 'selected' : ''}"
+            style="background:${t.hex}"
+            title="${t.label}"
+            onclick="Onboarding.setAccent('${t.name}','${t.hex}')"></div>`
+        ).join('');
+      },
+
+      renderAvatar() {
+        const { skin, eye, mouth, hat, acc } = this.data.avatar;
+        const skinColor = SKIN_TONES.find(s => s.id === skin)?.hex || '#FDDBB4';
+        const eyeData   = EYES.find(e => e.id === eye)   || EYES[0];
+        const mouthData = MOUTHS.find(m => m.id === mouth) || MOUTHS[0];
+        const hatData   = HATS.find(h => h.id === hat)   || HATS[0];
+        const accData   = ACCESSORIES.find(a => a.id === acc) || ACCESSORIES[0];
+
+        const cx = 60, cy = 62, r = 34;
+
+        const svg = `
+          <!-- Face bg -->
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="${skinColor}" />
+          <!-- Cheeks -->
+          <circle cx="${cx-20}" cy="${cy+12}" r="7" fill="rgba(255,120,100,0.18)" />
+          <circle cx="${cx+20}" cy="${cy+12}" r="7" fill="rgba(255,120,100,0.18)" />
+          <!-- Eyes at y=cy-6 -->
+          ${eyeData.draw(cx, cy-6)}
+          <!-- Nose -->
+          <circle cx="${cx}" cy="${cy+6}" r="2.5" fill="rgba(0,0,0,0.12)"/>
+          <!-- Mouth at y=cy+18 -->
+          ${mouthData.draw(cx, cy+18)}
+          <!-- Hat / Hair -->
+          ${hatData.drawHat(cx, cy, r)}
+          <!-- Accessory -->
+          ${accData.drawAcc(cx, cy)}
+          <!-- Notebook spine detail -->
+          <rect x="2" y="${cy+28}" width="4" height="${r-10}" rx="2" fill="${skinColor}" opacity="0.4"/>
+        `;
+
+        document.getElementById('avatarSVG').innerHTML = svg;
+      },
+
+      setAvatarPart(part, val) {
+        this.data.avatar[part] = val;
+        // Update selection UI
+        const maps = { skin: 'skinColors', eye: 'eyeOptions', mouth: 'mouthOptions', hat: 'hatOptions', acc: 'accOptions' };
+        const container = document.getElementById(maps[part]);
+        if (container) {
+          container.querySelectorAll('.avatar-opt, .color-dot').forEach(el => el.classList.remove('selected'));
+          // find by onclick value
+          const target = [...container.querySelectorAll('[onclick]')]
+            .find(el => el.getAttribute('onclick').includes(`'${val}'`));
+          if (target) target.classList.add('selected');
+        }
+        this.renderAvatar();
+      },
+
+      previewNickname(val) {
+        const el = document.getElementById('nicknamePreview');
+        el.textContent = val.trim() ? `👋 Hey, ${val}!` : 'Your nickname will appear here…';
+      },
+
+      back(step) {
+        LoginUI.showStep(step);
+      },
+
+      saveNickname() {
+        const val = document.getElementById('nicknameInput').value.trim();
+        if (!val || val.length < 2) {
+          alert('Please enter a nickname (at least 2 characters).'); return;
+        }
+        this.data.nickname = val;
+        LoginUI.showStep('step-avatar');
+      },
+
+      saveAvatar() {
+        LoginUI.showStep('step-persona');
+      },
+
+      selectPersona(p) {
+        this.data.persona = p;
+        document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById('persona-' + p).classList.add('selected');
+      },
+
+      savePersona() {
+        if (!this.data.persona) {
+          this.selectPersona('default');
+        }
+        LoginUI.showStep('step-theme');
+      },
+
+      setAccent(name, hex) {
+        this.data.accent = name;
+        document.documentElement.style.setProperty('--accent', hex);
+        document.querySelectorAll('.theme-swatch').forEach(s => {
+          const isSelected = s.getAttribute('onclick')?.includes(`'${name}'`);
+          s.classList.toggle('selected', isSelected);
+        });
+      },
+
+      setMode(mode) {
+        this.data.theme = mode;
+        document.getElementById('modeDark').classList.toggle('active', mode === 'dark');
+        document.getElementById('modeLight').classList.toggle('active', mode === 'light');
+        document.documentElement.setAttribute('data-theme', mode);
+      },
+
+      async saveTheme() {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        // Serialize avatar as SVG string too
+        const avatarSVG = document.getElementById('avatarSVG').innerHTML;
+        const profileData = {
+          nickname: this.data.nickname,
+          avatar:   this.data.avatar,
+          avatarSVG,
+          persona:  this.data.persona,
+          accent:   this.data.accent,
+          theme:    this.data.theme,
+          onboardingComplete: true,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          uid: user.uid,
+          email: user.email,
+        };
+
+        try {
+          await db.collection('users').doc(user.uid).set(profileData, { merge: true });
+          // Show tutorial
+          Tutorial.init();
+          LoginUI.showStep('step-tutorial');
+        } catch(e) {
+          console.error('Firestore save failed:', e);
+          // Fallback: go to app anyway
+          window.location.href = 'index.html';
+        }
+      },
+    };
+
+    /* ════════════════════════════════════════════════════════
+       KNOWL TUTORIAL
+    ════════════════════════════════════════════════════════ */
+    const Tutorial = {
+      _tips: [
+        {
+          title: "Hi! I'm Knowl 🦉",
+          text: "I know every corner of StudyVerse! I'm your personal study buddy — I'll help you learn faster, work smarter, and actually enjoy studying. Let's take a quick tour!"
+        },
+        {
+          title: "Your Dashboard 📋",
+          text: "The dashboard is your launchpad. All your study tools live here as cards. Click any card to open it. Hit the ♡ heart on a card to add it to your Favorites for one-click access!"
+        },
+        {
+          title: "Productivity Sidebar ⏱",
+          text: "Your power tools — Pomodoro timer, streak counter, and study time tracker — live in the sidebar. Hover over the timer or streak icon to open a mini pop-out window. Study without clogging your whole screen!"
+        },
+        {
+          title: "Streak & Study Data 🔥",
+          text: "Every study session builds your streak. StudyVerse tracks how long you've studied, your daily progress, and your longest streak. Come back every day to keep your fire going!"
+        },
+        {
+          title: "You're all set! 🚀",
+          text: `Welcome to StudyVerse, ${Onboarding.data.nickname || 'Scholar'}! Your universe of learning is ready. Click any tool to get started. I'll always be here if you need me. Let's go! ✨`
+        },
+      ],
+      _idx: 0,
+
+      init() {
+        this._idx = 0;
+        this._render();
+        this._buildDots();
+      },
+
+      _buildDots() {
+        const el = document.getElementById('knowlDots');
+        el.innerHTML = this._tips.map((_, i) =>
+          `<div class="knowl-dot ${i === 0 ? 'active' : ''}" onclick="Tutorial.goTo(${i})"></div>`
+        ).join('');
+      },
+
+      _render() {
+        const tip = this._tips[this._idx];
+        document.getElementById('knowlTipNum').textContent  = `Tip ${this._idx+1} of ${this._tips.length}`;
+        document.getElementById('knowlTipText').innerHTML   = tip.text;
+        document.querySelector('#knowlSpeech .knowl-name').textContent = tip.title;
+
+        // Nav dots
+        document.querySelectorAll('.knowl-dot').forEach((d, i) => {
+          d.classList.toggle('active', i === this._idx);
+        });
+
+        // Buttons
+        const prevBtn = document.getElementById('knowlPrevBtn');
+        const nextBtn = document.getElementById('knowlNextBtn');
+        prevBtn.style.display = this._idx > 0 ? 'block' : 'none';
+        const isLast = this._idx === this._tips.length - 1;
+        nextBtn.textContent = isLast ? "Enter StudyVerse 🚀" : "Next Tip →";
+      },
+
+      next() {
+        if (this._idx < this._tips.length - 1) {
+          this._idx++;
+          this._render();
+        } else {
+          window.location.href = 'index.html';
+        }
+      },
+
+      prev() {
+        if (this._idx > 0) { this._idx--; this._render(); }
+      },
+
+      goTo(i) {
+        this._idx = i; this._render();
+      },
+    };
+  </script>
 </body>
 </html>
