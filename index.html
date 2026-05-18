@@ -16,7 +16,7 @@
        APP SHELL
        The outer layout: sidebar + main content area
   ============================================================ -->
-  <div class="app-shell">
+  <div class="app-shell" id="appShell" style="visibility:hidden;opacity:0">
 
     <!-- === SIDEBAR === -->
     <aside class="sidebar" id="sidebar">
@@ -213,13 +213,14 @@
   <!-- Firebase Auth Guard — redirect to login if not signed in -->
   <script>
     const _fbConfig = {
-      apiKey: "AIzaSyDBhv0JthL9JFleleCcQglf8nwrXX3Gbj4",
-      authDomain: "studyverse-7ee8c.firebaseapp.com",
-      projectId: "studyverse-7ee8c",
-      storageBucket: "studyverse-7ee8c.firebasestorage.app",
+      apiKey:            "AIzaSyDBhv0JthL9JFleleCcQglf8nwrXX3Gbj4",
+      authDomain:        "studyverse-7ee8c.firebaseapp.com",
+      projectId:         "studyverse-7ee8c",
+      storageBucket:     "studyverse-7ee8c.firebasestorage.app",
       messagingSenderId: "383237890667",
-      appId: "1:383237890667:web:f280828b738a2ecb84c72e"
+      appId:             "1:383237890667:web:f280828b738a2ecb84c72e",
     };
+    // Only init if not already initialized (login.html may have init'd)
     if (!firebase.apps.length) firebase.initializeApp(_fbConfig);
     window._fbAuth = firebase.auth();
     window._fbDb   = firebase.firestore();
@@ -227,9 +228,13 @@
     // Auth guard: redirect to login.html if user is not signed in
     window._fbAuth.onAuthStateChanged(async (user) => {
       if (!user) {
-        window.location.href = 'login.html';
+        window.location.replace('login.html');
         return;
       }
+      // User confirmed — reveal the app shell
+      const shell = document.getElementById('appShell');
+      if (shell) { shell.style.visibility = ''; shell.style.opacity = ''; }
+
       // Load user profile from Firestore and apply preferences
       try {
         const doc = await window._fbDb.collection('users').doc(user.uid).get();
