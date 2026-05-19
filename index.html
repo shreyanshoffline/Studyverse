@@ -16,7 +16,7 @@
        APP SHELL
        The outer layout: sidebar + main content area
   ============================================================ -->
-  <div class="app-shell" id="appShell" style="visibility:hidden;opacity:0">
+  <div class="app-shell">
 
     <!-- === SIDEBAR === -->
     <aside class="sidebar" id="sidebar">
@@ -220,45 +220,51 @@
       messagingSenderId: "383237890667",
       appId:             "1:383237890667:web:f280828b738a2ecb84c72e",
     };
-    // Only init if not already initialized (login.html may have init'd)
     if (!firebase.apps.length) firebase.initializeApp(_fbConfig);
     window._fbAuth = firebase.auth();
     window._fbDb   = firebase.firestore();
 
-    // Auth guard: redirect to login.html if user is not signed in
+    // Hide entire page until auth is confirmed — prevents flash of app for logged-out users
+    document.documentElement.style.visibility = 'hidden';
+
     window._fbAuth.onAuthStateChanged(async (user) => {
       if (!user) {
+        // Not signed in — go to login
         window.location.replace('login.html');
         return;
       }
-      // User confirmed — reveal the app shell
-      const shell = document.getElementById('appShell');
-      if (shell) { shell.style.visibility = ''; shell.style.opacity = ''; }
 
-      // Load user profile from Firestore and apply preferences
+      // Signed in — load profile from Firestore BEFORE revealing the page
       try {
         const doc = await window._fbDb.collection('users').doc(user.uid).get();
         if (doc.exists) {
           const p = doc.data();
-          // Store for app.js to read
           window._userProfile = p;
-          // Pre-apply to <html> immediately so no flash
-          if (p.theme)   document.documentElement.setAttribute('data-theme', p.theme);
+
+          // Apply theme/persona/accent to <html> before paint so there's zero flash
+          if (p.theme)   document.documentElement.setAttribute('data-theme',   p.theme);
           if (p.persona) document.documentElement.setAttribute('data-persona', p.persona);
-          // Also save into localStorage so existing app.js State.load() picks it up
+          if (p.accent)  document.documentElement.setAttribute('data-accent',  p.accent);
+
+          // Sync into localStorage so app.js State.load() picks it up
           try {
             const existing = JSON.parse(localStorage.getItem('studyverse_state') || '{}');
             localStorage.setItem('studyverse_state', JSON.stringify({
               ...existing,
-              theme:   p.theme   || existing.theme   || 'dark',
-              persona: p.persona || existing.persona || 'default',
-              accent:  p.accent  || existing.accent  || 'sky',
+              theme:    p.theme   || existing.theme   || 'dark',
+              persona:  p.persona || existing.persona || 'default',
+              accent:   p.accent  || existing.accent  || 'sky',
+              favorites: existing.favorites || [],
+              decks:    existing.decks || [],
             }));
           } catch(e) {}
         }
       } catch(e) {
         console.warn('Could not load user profile:', e);
       }
+
+      // Now reveal the page — profile applied, no flash
+      document.documentElement.style.visibility = '';
     });
   </script>
 

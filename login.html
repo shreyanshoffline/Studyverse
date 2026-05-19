@@ -1284,33 +1284,53 @@
 
       async saveTheme() {
         const user = auth.currentUser;
-        if (!user) return;
+        if (!user) { alert('Session expired. Please sign in again.'); return; }
 
-        // Serialize avatar as SVG string too
+        // Serialize avatar SVG
         const avatarSVG = document.getElementById('avatarSVG').innerHTML;
         const profileData = {
-          nickname: this.data.nickname,
-          avatar:   this.data.avatar,
+          nickname:           this.data.nickname,
+          avatar:             this.data.avatar,
           avatarSVG,
-          persona:  this.data.persona,
-          accent:   this.data.accent,
-          theme:    this.data.theme,
+          persona:            this.data.persona  || 'default',
+          accent:             this.data.accent   || 'sky',
+          theme:              this.data.theme    || 'dark',
           onboardingComplete: true,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          uid: user.uid,
-          email: user.email,
+          createdAt:          firebase.firestore.FieldValue.serverTimestamp(),
+          uid:                user.uid,
+          email:              user.email,
         };
 
+        // 1. Save to Firestore
         try {
           await db.collection('users').doc(user.uid).set(profileData, { merge: true });
-          // Show tutorial
-          Tutorial.init();
-          LoginUI.showStep('step-tutorial');
         } catch(e) {
           console.error('Firestore save failed:', e);
-          // Fallback: go to app anyway
-          window.location.href = 'index.html';
+          // Non-fatal — still continue so user isn't stuck
         }
+
+        // 2. Cache profile in localStorage so index.html/app.js reads it instantly
+        try {
+          localStorage.setItem('studyverse_state', JSON.stringify({
+            theme:    profileData.theme,
+            persona:  profileData.persona,
+            accent:   profileData.accent,
+            favorites: [],
+            decks:    [],
+          }));
+          // Also store full profile for app.js loadUserProfile()
+          localStorage.setItem('studyverse_profile', JSON.stringify({
+            nickname:  profileData.nickname,
+            avatarSVG: profileData.avatarSVG,
+            theme:     profileData.theme,
+            persona:   profileData.persona,
+            accent:    profileData.accent,
+          }));
+        } catch(e) {}
+
+        // 3. Show tutorial before going to the app
+        Tutorial.init();
+        LoginUI.showStep('step-tutorial');
       },
     };
 

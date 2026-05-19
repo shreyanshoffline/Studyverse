@@ -58,21 +58,10 @@ const TOOLS = [
     description: 'Full-featured graphing calculator embedded right in your hub.',
     icon:        '📈',
     iconColor:   'color-green',
-    type:        'embed',          // opens in iframe view
+    type:        'embed',
     badge:       'Embedded',
     badgeClass:  'badge-embed',
     url:         'https://www.desmos.com/calculator',
-  },
-  {
-    id:          'notebooklm',
-    title:       'NotebookLM',
-    description: 'Google\'s AI notebook. Deep-links you in without leaving focus.',
-    icon:        '🔬',
-    iconColor:   'color-purple',
-    type:        'external',       // opens in new tab
-    badge:       'Deep Link',
-    badgeClass:  'badge-external',
-    url:         'https://notebooklm.google',
   },
   {
     id:          'duolingo',
@@ -80,15 +69,11 @@ const TOOLS = [
     description: 'Track your streak, XP, and weekly progress — API-ready.',
     icon:        '🦉',
     iconColor:   'color-amber',
-    type:        'widget',         // opens a modal with widget UI
+    type:        'widget',
     badge:       'Mock API',
     badgeClass:  'badge-api',
     openFn:      () => DuolingoWidget.open(),
   },
-
-  /* ── ADD NEW TOOLS BELOW THIS LINE ─────────────────────────── */
-
-  // ── QUIZLET ─────────────────────────────────────────────────
   {
     id:          'quizlet',
     title:       'Quizlet',
@@ -100,8 +85,6 @@ const TOOLS = [
     badgeClass:  'badge-embed',
     openFn:      () => QuizletTool.open(),
   },
-
-  // ── NOTION ──────────────────────────────────────────────────
   {
     id:          'notion',
     title:       'Notion',
@@ -113,12 +96,10 @@ const TOOLS = [
     badgeClass:  'badge-embed',
     openFn:      () => NotionTool.open(),
   },
-
-  // ── WOLFRAM ALPHA ────────────────────────────────────────────
   {
     id:          'wolfram',
     title:       'WolframAlpha',
-    description: 'Step-by-step math, science, and computation. Paste any equation or question.',
+    description: 'Step-by-step math, science, and computation. Type any equation or question.',
     icon:        '🧮',
     iconColor:   'color-amber',
     type:        'builtin',
@@ -126,8 +107,6 @@ const TOOLS = [
     badgeClass:  'badge-api',
     openFn:      () => WolframTool.open(),
   },
-
-  // ── GRAMMARLY ────────────────────────────────────────────────
   {
     id:          'grammarly',
     title:       'Grammarly Editor',
@@ -139,8 +118,6 @@ const TOOLS = [
     badgeClass:  'badge-builtin',
     openFn:      () => GrammarlyTool.open(),
   },
-
-  // ── ZOTERO ───────────────────────────────────────────────────
   {
     id:          'zotero',
     title:       'Zotero Citations',
@@ -152,12 +129,10 @@ const TOOLS = [
     badgeClass:  'badge-api',
     openFn:      () => ZoteroTool.open(),
   },
-
-  // ── ANKI ─────────────────────────────────────────────────────
   {
     id:          'anki',
     title:       'Anki',
-    description: 'Open Anki\'s web interface for spaced-repetition flashcard study.',
+    description: 'The gold-standard spaced-repetition flashcard app. Opens AnkiWeb in a new tab.',
     icon:        '🧠',
     iconColor:   'color-pink',
     type:        'external',
@@ -165,12 +140,10 @@ const TOOLS = [
     badgeClass:  'badge-external',
     url:         'https://ankiweb.net',
   },
-
-  // ── NOTEBOOKLM ───────────────────────────────────────────────
   {
     id:          'notebooklm',
     title:       'NotebookLM',
-    description: 'Google\'s AI notebook — upload PDFs and get auto-generated study guides.',
+    description: 'Google\'s AI notebook — upload PDFs and get auto-generated study guides & podcasts.',
     icon:        '🔬',
     iconColor:   'color-purple',
     type:        'external',
@@ -292,9 +265,16 @@ const App = {
     window.location.href = 'login.html';
   },
 
-  /* Load user profile from Firestore/window and apply to UI */
+  /* Load user profile from Firestore/window/localStorage and apply to UI */
   loadUserProfile() {
-    const p = window._userProfile;
+    // Prefer Firestore profile, fall back to localStorage cache written by login.html
+    let p = window._userProfile;
+    if (!p) {
+      try {
+        const cached = localStorage.getItem('studyverse_profile');
+        if (cached) p = JSON.parse(cached);
+      } catch(e) {}
+    }
     if (!p) return;
 
     // Apply nickname to greeting
@@ -382,14 +362,14 @@ const App = {
     this.navigate('dashboard');
   },
 
-  /* Close modal when clicking the overlay background */
+  /* Close modal when clicking the dark overlay background */
   closeModalOverlay(event) {
     if (event.target === document.getElementById('modalOverlay')) {
       ModalSystem.close();
     }
   },
 
-  /* Close modal from the × button (always closes) */
+  /* Close modal from the × button — always closes */
   closeModal() {
     ModalSystem.close();
   },
@@ -1195,315 +1175,6 @@ const DuolingoWidget = {
 
 
 /* ================================================================
-   14. TOOL: QUIZLET EMBEDDER
-   Paste a Quizlet set URL → extracts set ID → renders iframe.
-================================================================ */
-const QuizletTool = {
-  open() {
-    ModalSystem.open('📇 Quizlet', this.buildUI(), '760px');
-  },
-
-  buildUI() {
-    return `
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
-          Paste the URL of any <strong>public</strong> Quizlet set below.
-          Example: <code style="font-size:0.8rem;background:var(--bg-subtle);padding:2px 6px;border-radius:4px">https://quizlet.com/123456789/my-set-flash-cards/</code>
-        </p>
-        <div style="display:flex;gap:10px">
-          <input id="quizletUrl" type="url" placeholder="https://quizlet.com/…"
-            style="flex:1;padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;" />
-          <button class="btn-accent" onclick="QuizletTool.load()">Load Set →</button>
-        </div>
-        <div id="quizletError" style="color:var(--danger);font-size:0.85rem;display:none"></div>
-        <div id="quizletFrame" style="display:none">
-          <iframe id="quizletIframe" src="" height="500" width="100%"
-            style="border:0;border-radius:var(--ui-radius,10px)" allowfullscreen></iframe>
-        </div>
-      </div>`;
-  },
-
-  load() {
-    const url = document.getElementById('quizletUrl').value.trim();
-    const errEl = document.getElementById('quizletError');
-    errEl.style.display = 'none';
-
-    // Extract set ID from URL like https://quizlet.com/123456789/set-name/...
-    const match = url.match(/quizlet\.com\/(\d+)\//);
-    if (!match) {
-      errEl.textContent = 'Could not find a Quizlet set ID in that URL. Make sure it\'s a public set link.';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    const setId = match[1];
-    const embedUrl = `https://quizlet.com/${setId}/flashcards/embedv2`;
-    document.getElementById('quizletIframe').src = embedUrl;
-    document.getElementById('quizletFrame').style.display = 'block';
-  },
-};
-
-
-/* ================================================================
-   15. TOOL: NOTION EMBEDDER
-   Paste a public Notion share link → renders iframe.
-================================================================ */
-const NotionTool = {
-  open() {
-    ModalSystem.open('📝 Notion', this.buildUI(), '900px');
-  },
-
-  buildUI() {
-    return `
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
-          In Notion, click <strong>Share → Share to web</strong>, then paste the public link below.
-        </p>
-        <div style="display:flex;gap:10px">
-          <input id="notionUrl" type="url" placeholder="https://notion.so/…"
-            style="flex:1;padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;" />
-          <button class="btn-accent" onclick="NotionTool.load()">Load Page →</button>
-        </div>
-        <div id="notionError" style="color:var(--danger);font-size:0.85rem;display:none"></div>
-        <div id="notionFrame" style="display:none">
-          <iframe id="notionIframe" src="" height="600" width="100%"
-            style="border:0;border-radius:var(--ui-radius,10px)" allowfullscreen></iframe>
-        </div>
-      </div>`;
-  },
-
-  load() {
-    const url = document.getElementById('notionUrl').value.trim();
-    const errEl = document.getElementById('notionError');
-    errEl.style.display = 'none';
-
-    if (!url.includes('notion.so') && !url.includes('notion.site')) {
-      errEl.textContent = 'Please enter a valid Notion share link (notion.so or notion.site).';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    document.getElementById('notionIframe').src = url;
-    document.getElementById('notionFrame').style.display = 'block';
-  },
-};
-
-
-/* ================================================================
-   16. TOOL: WOLFRAM ALPHA
-   Uses the WolframAlpha Simple API to render answer images.
-   Sign up free at https://developer.wolframalpha.com to get an App ID.
-================================================================ */
-const WolframTool = {
-  // Replace with your free WolframAlpha App ID from developer.wolframalpha.com
-  APP_ID: 'REPLACE_WITH_WOLFRAM_APP_ID',
-
-  open() {
-    ModalSystem.open('🧮 WolframAlpha', this.buildUI(), '760px');
-  },
-
-  buildUI() {
-    return `
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
-          Type any math equation, science question, or conversion. Powered by WolframAlpha.
-        </p>
-        <div style="display:flex;gap:10px">
-          <input id="wolframInput" type="text" placeholder="e.g. x^2 + 3x - 4 = 0  or  distance from Earth to Moon"
-            style="flex:1;padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;"
-            onkeydown="if(event.key==='Enter')WolframTool.query()" />
-          <button class="btn-accent" onclick="WolframTool.query()">Solve →</button>
-        </div>
-        <div id="wolframResult" style="display:none;text-align:center">
-          <div id="wolframSpinner" style="padding:20px;color:var(--text-secondary)">Computing…</div>
-          <img id="wolframImg" src="" alt="WolframAlpha result" style="max-width:100%;border-radius:var(--ui-radius,10px);display:none" />
-          <div id="wolframError" style="color:var(--danger);font-size:0.85rem;display:none"></div>
-        </div>
-        ${this.APP_ID === 'REPLACE_WITH_WOLFRAM_APP_ID' ? `
-          <div style="background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);padding:12px 14px;font-size:0.83rem;color:var(--text-secondary)">
-            ⚠️ <strong>Setup needed:</strong> Get a free App ID at
-            <a href="https://developer.wolframalpha.com" target="_blank" rel="noopener" style="color:var(--accent)">developer.wolframalpha.com</a>
-            and replace <code>REPLACE_WITH_WOLFRAM_APP_ID</code> in app.js.
-          </div>` : ''}
-      </div>`;
-  },
-
-  async query() {
-    const q = document.getElementById('wolframInput').value.trim();
-    if (!q) return;
-    if (this.APP_ID === 'REPLACE_WITH_WOLFRAM_APP_ID') {
-      Toast.show('Add your WolframAlpha App ID in app.js first.', 'warning');
-      return;
-    }
-
-    const resultEl = document.getElementById('wolframResult');
-    const spinner  = document.getElementById('wolframSpinner');
-    const img      = document.getElementById('wolframImg');
-    const errEl    = document.getElementById('wolframError');
-
-    resultEl.style.display = 'block';
-    spinner.style.display  = 'block';
-    img.style.display      = 'none';
-    errEl.style.display    = 'none';
-
-    // WolframAlpha Simple API returns an image directly
-    const url = `https://api.wolframalpha.com/v1/simple?appid=${this.APP_ID}&i=${encodeURIComponent(q)}&width=600`;
-
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('No result');
-      const blob = await res.blob();
-      img.src = URL.createObjectURL(blob);
-      img.style.display = 'block';
-      spinner.style.display = 'none';
-    } catch(e) {
-      spinner.style.display = 'none';
-      errEl.textContent = 'No result found. Try rephrasing your query.';
-      errEl.style.display = 'block';
-    }
-  },
-};
-
-
-/* ================================================================
-   17. TOOL: GRAMMARLY EDITOR
-   Grammarly Editor SDK auto-enhances any textarea on the page.
-   The SDK script is injected once when this tool first opens.
-   Note: Grammarly SDK requires their domain allowlist — add
-   your deployment domain at app.grammarly.com/sdk-setup.
-================================================================ */
-const GrammarlyTool = {
-  _sdkLoaded: false,
-
-  open() {
-    ModalSystem.open('✍️ Grammarly Editor', this.buildUI(), '760px');
-    this._initSDK();
-  },
-
-  buildUI() {
-    return `
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
-          Write or paste your essay below. Grammarly will underline grammar, tone, and clarity issues inline.
-          You need a free <a href="https://app.grammarly.com" target="_blank" rel="noopener" style="color:var(--accent)">Grammarly account</a> to see suggestions.
-        </p>
-        <grammarly-editor-plugin>
-          <textarea id="grammarlyTextarea"
-            placeholder="Start writing here…"
-            style="width:100%;min-height:320px;padding:14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.95rem;line-height:1.6;outline:none;resize:vertical;font-family:inherit;"></textarea>
-        </grammarly-editor-plugin>
-        <div style="display:flex;gap:10px;justify-content:flex-end">
-          <button class="btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('grammarlyTextarea').value);Toast.show('Copied!','success')">📋 Copy</button>
-        </div>
-        <div style="font-size:0.8rem;color:var(--text-muted)">
-          Grammarly suggestions appear as underlines directly in the text area. Click any underline to see the fix.
-        </div>
-      </div>`;
-  },
-
-  _initSDK() {
-    if (this._sdkLoaded) return;
-    this._sdkLoaded = true;
-    const s = document.createElement('script');
-    s.src = 'https://unpkg.com/@grammarly/editor-sdk@1?clientId=client_REPLACE_WITH_GRAMMARLY_CLIENT_ID';
-    s.async = true;
-    document.head.appendChild(s);
-  },
-};
-
-
-/* ================================================================
-   18. TOOL: ZOTERO CITATIONS
-   Uses the Zotero Web API to browse the user's public library
-   and copy formatted MLA/APA citations.
-   Get your User ID + API key at https://www.zotero.org/settings/keys
-================================================================ */
-const ZoteroTool = {
-  open() {
-    ModalSystem.open('🎓 Zotero Citations', this.buildUI(), '760px');
-  },
-
-  buildUI() {
-    return `
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
-          Enter your Zotero User ID and API key to browse your library and copy citations.
-          Find both at <a href="https://www.zotero.org/settings/keys" target="_blank" rel="noopener" style="color:var(--accent)">zotero.org/settings/keys</a>.
-        </p>
-        <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
-          <input id="zoteroUserId" type="text" placeholder="User ID (numbers)"
-            style="padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;" />
-          <input id="zoteroApiKey" type="password" placeholder="API Key"
-            style="padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;" />
-        </div>
-        <div style="display:flex;gap:10px;align-items:center">
-          <select id="zoteroFormat" style="padding:9px 12px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none">
-            <option value="apa">APA 7th</option>
-            <option value="mla">MLA 9th</option>
-            <option value="chicago-note-bibliography">Chicago</option>
-          </select>
-          <button class="btn-accent" onclick="ZoteroTool.fetch()">Load Library →</button>
-        </div>
-        <div id="zoteroError" style="color:var(--danger);font-size:0.85rem;display:none"></div>
-        <div id="zoteroResults" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
-      </div>`;
-  },
-
-  async fetch() {
-    const userId = document.getElementById('zoteroUserId').value.trim();
-    const apiKey = document.getElementById('zoteroApiKey').value.trim();
-    const format = document.getElementById('zoteroFormat').value;
-    const errEl  = document.getElementById('zoteroError');
-    const resEl  = document.getElementById('zoteroResults');
-
-    errEl.style.display = 'none';
-    resEl.innerHTML = '<div style="color:var(--text-secondary);padding:10px">Loading library…</div>';
-
-    if (!userId || !apiKey) {
-      errEl.textContent = 'Please enter both your User ID and API Key.';
-      errEl.style.display = 'block';
-      resEl.innerHTML = '';
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        `https://api.zotero.org/users/${userId}/items?format=json&include=bib&style=${format}&limit=25`,
-        { headers: { 'Zotero-API-Key': apiKey } }
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const items = await res.json();
-
-      if (!items.length) {
-        resEl.innerHTML = '<div style="color:var(--text-secondary);padding:10px">No items found in your library.</div>';
-        return;
-      }
-
-      resEl.innerHTML = items.map((item, i) => {
-        const bib = item.bib || '';
-        // Strip HTML tags for clipboard
-        const plain = bib.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-        const title = item.data?.title || 'Untitled';
-        return `
-          <div style="background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);padding:12px 14px">
-            <div style="font-size:0.85rem;font-weight:500;margin-bottom:6px;color:var(--text-primary)">${title}</div>
-            <div style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin-bottom:8px">${bib || plain}</div>
-            <button class="btn-secondary" style="font-size:0.8rem;padding:5px 10px"
-              onclick="navigator.clipboard.writeText(${JSON.stringify(plain)});Toast.show('Citation copied!','success')">
-              📋 Copy Citation
-            </button>
-          </div>`;
-      }).join('');
-    } catch(e) {
-      errEl.textContent = 'Could not load library. Check your User ID and API Key.';
-      errEl.style.display = 'block';
-      resEl.innerHTML = '';
-    }
-  },
-};
-
-
-/* ================================================================
    9. THEME & PERSONA
    Applies persisted settings on load.
 ================================================================ */
@@ -1611,6 +1282,215 @@ const Toast = {
 
 
 /* ================================================================
+   14. TOOL: QUIZLET EMBEDDER
+================================================================ */
+const QuizletTool = {
+  open() { ModalSystem.open('📇 Quizlet', this.buildUI(), '760px'); },
+  buildUI() {
+    return `<div style="display:flex;flex-direction:column;gap:16px">
+      <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
+        Paste the URL of any <strong>public</strong> Quizlet set.<br>
+        Example: <code style="font-size:0.8rem;background:var(--bg-subtle);padding:2px 6px;border-radius:4px">https://quizlet.com/123456789/my-set-flash-cards/</code>
+      </p>
+      <div style="display:flex;gap:10px">
+        <input id="quizletUrl" type="url" placeholder="https://quizlet.com/…"
+          style="flex:1;padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;" />
+        <button class="btn-accent" onclick="QuizletTool.load()">Load →</button>
+      </div>
+      <div id="quizletError" style="color:var(--danger);font-size:0.85rem;display:none"></div>
+      <div id="quizletFrame" style="display:none">
+        <iframe id="quizletIframe" src="" height="500" width="100%" style="border:0;border-radius:var(--ui-radius,10px)" allowfullscreen></iframe>
+      </div>
+    </div>`;
+  },
+  load() {
+    const url = document.getElementById('quizletUrl').value.trim();
+    const err = document.getElementById('quizletError');
+    err.style.display = 'none';
+    const match = url.match(/quizlet\.com\/(\d+)\//);
+    if (!match) { err.textContent = 'Paste a valid public Quizlet set URL.'; err.style.display = 'block'; return; }
+    document.getElementById('quizletIframe').src = `https://quizlet.com/${match[1]}/flashcards/embedv2`;
+    document.getElementById('quizletFrame').style.display = 'block';
+  },
+};
+
+/* ================================================================
+   15. TOOL: NOTION EMBEDDER
+================================================================ */
+const NotionTool = {
+  open() { ModalSystem.open('📝 Notion', this.buildUI(), '900px'); },
+  buildUI() {
+    return `<div style="display:flex;flex-direction:column;gap:16px">
+      <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
+        In Notion: <strong>Share → Share to web → Copy link</strong>, then paste it below.
+      </p>
+      <div style="display:flex;gap:10px">
+        <input id="notionUrl" type="url" placeholder="https://notion.so/…"
+          style="flex:1;padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;" />
+        <button class="btn-accent" onclick="NotionTool.load()">Load →</button>
+      </div>
+      <div id="notionError" style="color:var(--danger);font-size:0.85rem;display:none"></div>
+      <div id="notionFrame" style="display:none">
+        <iframe id="notionIframe" src="" height="600" width="100%" style="border:0;border-radius:var(--ui-radius,10px)" allowfullscreen></iframe>
+      </div>
+    </div>`;
+  },
+  load() {
+    const url = document.getElementById('notionUrl').value.trim();
+    const err = document.getElementById('notionError');
+    err.style.display = 'none';
+    if (!url.includes('notion.so') && !url.includes('notion.site')) {
+      err.textContent = 'Please paste a valid Notion share link.'; err.style.display = 'block'; return;
+    }
+    document.getElementById('notionIframe').src = url;
+    document.getElementById('notionFrame').style.display = 'block';
+  },
+};
+
+/* ================================================================
+   16. TOOL: WOLFRAM ALPHA
+   Get a free App ID at https://developer.wolframalpha.com
+   then replace WOLFRAM_APP_ID below.
+================================================================ */
+const WolframTool = {
+  APP_ID: 'REPLACE_WITH_WOLFRAM_APP_ID',
+  open() { ModalSystem.open('🧮 WolframAlpha', this.buildUI(), '760px'); },
+  buildUI() {
+    const needsKey = this.APP_ID === 'REPLACE_WITH_WOLFRAM_APP_ID';
+    return `<div style="display:flex;flex-direction:column;gap:16px">
+      <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
+        Type any equation, science question, or unit conversion.
+      </p>
+      <div style="display:flex;gap:10px">
+        <input id="wolframInput" type="text" placeholder="e.g.  x² + 3x − 4 = 0"
+          style="flex:1;padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;"
+          onkeydown="if(event.key==='Enter')WolframTool.query()" />
+        <button class="btn-accent" onclick="WolframTool.query()">Solve →</button>
+      </div>
+      ${needsKey ? `<div style="background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);padding:12px;font-size:0.83rem;color:var(--text-secondary)">
+        ⚠️ Add your free App ID from <a href="https://developer.wolframalpha.com" target="_blank" style="color:var(--accent)">developer.wolframalpha.com</a> — replace <code>REPLACE_WITH_WOLFRAM_APP_ID</code> in app.js.
+      </div>` : ''}
+      <div id="wolframResult" style="display:none;text-align:center">
+        <div id="wolframSpinner" style="padding:20px;color:var(--text-secondary)">Computing…</div>
+        <img id="wolframImg" src="" alt="Result" style="max-width:100%;border-radius:8px;display:none" />
+        <div id="wolframError" style="color:var(--danger);font-size:0.85rem;display:none"></div>
+      </div>
+    </div>`;
+  },
+  async query() {
+    const q = document.getElementById('wolframInput')?.value.trim();
+    if (!q) return;
+    if (this.APP_ID === 'REPLACE_WITH_WOLFRAM_APP_ID') { Toast.show('Add your WolframAlpha App ID in app.js first.', 'warning'); return; }
+    const res = document.getElementById('wolframResult');
+    const spin = document.getElementById('wolframSpinner');
+    const img  = document.getElementById('wolframImg');
+    const err  = document.getElementById('wolframError');
+    res.style.display = 'block'; spin.style.display = 'block'; img.style.display = 'none'; err.style.display = 'none';
+    try {
+      const r = await fetch(`https://api.wolframalpha.com/v1/simple?appid=${this.APP_ID}&i=${encodeURIComponent(q)}&width=600`);
+      if (!r.ok) throw new Error();
+      img.src = URL.createObjectURL(await r.blob());
+      img.style.display = 'block'; spin.style.display = 'none';
+    } catch(e) {
+      spin.style.display = 'none'; err.textContent = 'No result — try rephrasing.'; err.style.display = 'block';
+    }
+  },
+};
+
+/* ================================================================
+   17. TOOL: GRAMMARLY EDITOR
+   Add your deployment domain at app.grammarly.com/sdk-setup,
+   then replace GRAMMARLY_CLIENT_ID below.
+================================================================ */
+const GrammarlyTool = {
+  _loaded: false,
+  open() { ModalSystem.open('✍️ Grammarly Editor', this.buildUI(), '760px'); this._initSDK(); },
+  buildUI() {
+    return `<div style="display:flex;flex-direction:column;gap:14px">
+      <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
+        Write or paste your essay. Grammarly will flag grammar, tone, and clarity issues inline.
+        Requires a free <a href="https://app.grammarly.com" target="_blank" style="color:var(--accent)">Grammarly account</a>.
+      </p>
+      <grammarly-editor-plugin>
+        <textarea id="grammarlyTextarea" placeholder="Start writing here…"
+          style="width:100%;min-height:320px;padding:14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.95rem;line-height:1.6;outline:none;resize:vertical;font-family:inherit;"></textarea>
+      </grammarly-editor-plugin>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('grammarlyTextarea').value);Toast.show('Copied!','success')">📋 Copy</button>
+      </div>
+    </div>`;
+  },
+  _initSDK() {
+    if (this._loaded) return;
+    this._loaded = true;
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/@grammarly/editor-sdk@1?clientId=client_REPLACE_WITH_GRAMMARLY_CLIENT_ID';
+    s.async = true; document.head.appendChild(s);
+  },
+};
+
+/* ================================================================
+   18. TOOL: ZOTERO CITATIONS
+   Get User ID + API key at https://www.zotero.org/settings/keys
+================================================================ */
+const ZoteroTool = {
+  open() { ModalSystem.open('🎓 Zotero Citations', this.buildUI(), '760px'); },
+  buildUI() {
+    return `<div style="display:flex;flex-direction:column;gap:16px">
+      <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.5">
+        Get your User ID and API key at <a href="https://www.zotero.org/settings/keys" target="_blank" style="color:var(--accent)">zotero.org/settings/keys</a>.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
+        <input id="zoteroUserId" type="text" placeholder="User ID"
+          style="padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;" />
+        <input id="zoteroApiKey" type="password" placeholder="API Key"
+          style="padding:10px 14px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none;" />
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <select id="zoteroFormat" style="padding:9px 12px;background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);color:var(--text-primary);font-size:0.9rem;outline:none">
+          <option value="apa">APA 7th</option>
+          <option value="mla">MLA 9th</option>
+          <option value="chicago-note-bibliography">Chicago</option>
+        </select>
+        <button class="btn-accent" onclick="ZoteroTool.fetch()">Load Library →</button>
+      </div>
+      <div id="zoteroError" style="color:var(--danger);font-size:0.85rem;display:none"></div>
+      <div id="zoteroResults" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
+    </div>`;
+  },
+  async fetch() {
+    const uid = document.getElementById('zoteroUserId').value.trim();
+    const key = document.getElementById('zoteroApiKey').value.trim();
+    const fmt = document.getElementById('zoteroFormat').value;
+    const err = document.getElementById('zoteroError');
+    const res = document.getElementById('zoteroResults');
+    err.style.display = 'none';
+    if (!uid || !key) { err.textContent = 'Enter both User ID and API Key.'; err.style.display = 'block'; return; }
+    res.innerHTML = '<div style="color:var(--text-secondary);padding:10px">Loading…</div>';
+    try {
+      const r = await fetch(`https://api.zotero.org/users/${uid}/items?format=json&include=bib&style=${fmt}&limit=25`, { headers: { 'Zotero-API-Key': key } });
+      if (!r.ok) throw new Error();
+      const items = await r.json();
+      if (!items.length) { res.innerHTML = '<div style="color:var(--text-secondary);padding:10px">No items found.</div>'; return; }
+      res.innerHTML = items.map(item => {
+        const bib   = item.bib || '';
+        const plain = bib.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+        const title = item.data?.title || 'Untitled';
+        return `<div style="background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--ui-radius,10px);padding:12px 14px">
+          <div style="font-size:0.85rem;font-weight:500;margin-bottom:6px">${title}</div>
+          <div style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin-bottom:8px">${bib||plain}</div>
+          <button class="btn-secondary" style="font-size:0.8rem;padding:5px 10px"
+            onclick="navigator.clipboard.writeText(${JSON.stringify(plain)});Toast.show('Citation copied!','success')">📋 Copy</button>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      err.textContent = 'Could not load library — check your credentials.'; err.style.display = 'block'; res.innerHTML = '';
+    }
+  },
+};
+
+
+/* ================================================================
    13. INIT
    Bootstraps the app on DOMContentLoaded.
 ================================================================ */
@@ -1627,17 +1507,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. Navigate to dashboard (default view)
   App.navigate('dashboard');
 
-  // 5. Load Firebase user profile once auth resolves (avoids race condition)
+  // 5. Apply profile to UI — try localStorage cache immediately, then update when Firebase resolves
+  App.loadUserProfile(); // reads localStorage cache written by login.html's saveTheme()
+
   if (window._fbAuth) {
     window._fbAuth.onAuthStateChanged(async (user) => {
-      if (user && !window._userProfile) {
-        try {
-          const doc = await window._fbDb.collection('users').doc(user.uid).get();
-          if (doc.exists) { window._userProfile = doc.data(); App.loadUserProfile(); }
-        } catch(e) {}
-      } else if (window._userProfile) {
+      if (!user) return;
+      // If Firestore already loaded profile (via index.html auth guard), apply it
+      if (window._userProfile) {
         App.loadUserProfile();
+        return;
       }
+      // Otherwise fetch it now
+      try {
+        const doc = await window._fbDb.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          window._userProfile = doc.data();
+          // Update localStorage cache
+          try { localStorage.setItem('studyverse_profile', JSON.stringify(window._userProfile)); } catch(e) {}
+          App.loadUserProfile();
+        }
+      } catch(e) {}
     });
   }
 
