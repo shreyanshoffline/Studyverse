@@ -1079,21 +1079,103 @@
     ];
 
     const HATS = [
-      { id: 'h0', emoji: '—',   label: 'None',       drawHat: () => '' },
-      { id: 'h1', emoji: '🎓',  label: 'Grad Cap',   drawHat: (x,y,r) => `<rect x="${x-r+4}" y="${y-r-10}" width="${(r-4)*2}" height="8" rx="2" fill="#1a1a2e"/><rect x="${x-r-6}" y="${y-r-12}" width="${(r+6)*2}" height="6" rx="3" fill="#2c3e50"/><line x1="${x+r+2}" y1="${y-r-8}" x2="${x+r+14}" y2="${y-r+2}" stroke="#f1c40f" stroke-width="2.5"/>` },
-      { id: 'h2', emoji: '✏️',  label: 'Pencil Hair', drawHat: (x,y,r) => `<line x1="${x-10}" y1="${y-r-2}" x2="${x-4}" y2="${y-r-22}" stroke="#f39c12" stroke-width="5" stroke-linecap="round"/><line x1="${x+4}" y1="${y-r-2}" x2="${x+10}" y2="${y-r-22}" stroke="#f39c12" stroke-width="5" stroke-linecap="round"/><polygon points="${x-4},${y-r-22} ${x+10},${y-r-22} ${x+3},${y-r-30}" fill="#e74c3c"/>` },
-      { id: 'h3', emoji: '📚',  label: 'Book Stack',  drawHat: (x,y,r) => `<rect x="${x-r+4}" y="${y-r-18}" width="${(r-4)*2}" height="6" rx="2" fill="#e74c3c"/><rect x="${x-r+2}" y="${y-r-12}" width="${(r-2)*2}" height="6" rx="2" fill="#3498db"/><rect x="${x-r}" y="${y-r-6}" width="${r*2}" height="6" rx="2" fill="#2ecc71"/>` },
-      { id: 'h4', emoji: '🎨',  label: 'Beret',       drawHat: (x,y,r) => `<ellipse cx="${x}" cy="${y-r}" rx="${r+4}" ry="8" fill="#9b59b6"/><circle cx="${x+8}" cy="${y-r-4}" r="4" fill="#8e44ad"/>` },
-      { id: 'h5', emoji: '🖊️', label: 'Crown',        drawHat: (x,y,r) => `<path d="M${x-r+2},${y-r-2} L${x-r+6},${y-r-18} L${x},${y-r-10} L${x+r-6},${y-r-18} L${x+r-2},${y-r-2} Z" fill="#f1c40f" stroke="#e67e22" stroke-width="1.5"/>` },
-      { id: 'h6', emoji: '🎒',  label: 'Curly Hair',  drawHat: (x,y,r) => `<path d="M${x-r},${y-r+4} Q${x-r-8},${y-r-20} ${x-r+10},${y-r-16} Q${x-r},${y-r-28} ${x+4},${y-r-20} Q${x+r-4},${y-r-28} ${x+r},${y-r-14} Q${x+r+6},${y-r-20} ${x+r},${y-r+4}" fill="#c0392b"/>` },
+      // None
+      { id: 'h0', emoji: '—',  label: 'None',
+        drawHat: () => '' },
+
+      // Flat-top hair (short)
+      { id: 'h1', emoji: '🟫', label: 'Short Hair',
+        drawHat: (x,y,r) => `<path d="M${x-r+2},${y-r+4} Q${x},${y-r-12} ${x+r-2},${y-r+4}" fill="#4a2f1a"/>` },
+
+      // Curly hair
+      { id: 'h2', emoji: '🌀', label: 'Curly Hair',
+        drawHat: (x,y,r) => `
+          <path d="M${x-r},${y-r+6} Q${x-r-4},${y-r-14} ${x-r+14},${y-r-10}
+                   Q${x-8},${y-r-24} ${x+8},${y-r-18}
+                   Q${x+r-8},${y-r-24} ${x+r},${y-r-10}
+                   Q${x+r+4},${y-r-14} ${x+r},${y-r+6}" fill="#2c1810"/>` },
+
+      // Long hair (flowing down sides)
+      { id: 'h3', emoji: '💇', label: 'Long Hair',
+        drawHat: (x,y,r) => `
+          <path d="M${x-r},${y-r+6} Q${x-r-8},${y-r-16} ${x},${y-r-18} Q${x+r+8},${y-r-16} ${x+r},${y-r+6}" fill="#3d1f0a"/>
+          <rect x="${x-r-4}" y="${y-r+4}" width="10" height="${r+10}" rx="5" fill="#3d1f0a"/>
+          <rect x="${x+r-6}" y="${y-r+4}" width="10" height="${r+10}" rx="5" fill="#3d1f0a"/>` },
+
+      // Baseball cap
+      { id: 'h4', emoji: '🧢', label: 'Baseball Cap',
+        drawHat: (x,y,r) => `
+          <path d="M${x-r},${y-r+4} Q${x},${y-r-20} ${x+r},${y-r+4}" fill="#2980b9"/>
+          <rect x="${x-r}" y="${y-r+2}" width="${r*2}" height="7" rx="2" fill="#1a6fa0"/>
+          <rect x="${x-r}" y="${y-r+4}" width="${r+12}" height="6" rx="3" fill="#1a6fa0"/>` },
+
+      // Beanie
+      { id: 'h5', emoji: '🎿', label: 'Beanie',
+        drawHat: (x,y,r) => `
+          <path d="M${x-r+2},${y-r+5} Q${x-r-2},${y-r-22} ${x},${y-r-24} Q${x+r+2},${y-r-22} ${x+r-2},${y-r+5}" fill="#c0392b"/>
+          <rect x="${x-r+2}" y="${y-r+3}" width="${(r-2)*2}" height="8" rx="4" fill="#a93226"/>
+          <circle cx="${x}" cy="${y-r-22}" r="5" fill="#e74c3c"/>` },
+
+      // Crown
+      { id: 'h6', emoji: '👑', label: 'Crown',
+        drawHat: (x,y,r) => `
+          <path d="M${x-r+4},${y-r+2} L${x-r+4},${y-r-14} L${x-8},${y-r-6} L${x},${y-r-18} L${x+8},${y-r-6} L${x+r-4},${y-r-14} L${x+r-4},${y-r+2} Z"
+                fill="#f1c40f" stroke="#d4ac0d" stroke-width="1.5"/>
+          <circle cx="${x}" cy="${y-r-16}" r="3" fill="#e74c3c"/>
+          <circle cx="${x-r+6}" cy="${y-r-12}" r="2.5" fill="#3498db"/>
+          <circle cx="${x+r-6}" cy="${y-r-12}" r="2.5" fill="#3498db"/>` },
+
+      // Beret
+      { id: 'h7', emoji: '🎨', label: 'Beret',
+        drawHat: (x,y,r) => `
+          <ellipse cx="${x-4}" cy="${y-r-2}" rx="${r+6}" ry="10" fill="#8e44ad"/>
+          <ellipse cx="${x-4}" cy="${y-r+4}" rx="${r+2}" ry="5" fill="#7d3c98"/>
+          <circle cx="${x+r+2}" cy="${y-r-4}" r="4" fill="#6c3483"/>` },
+
+      // Headband
+      { id: 'h8', emoji: '🏃', label: 'Headband',
+        drawHat: (x,y,r) => `
+          <path d="M${x-r},${y-r+6} Q${x},${y-r-20} ${x+r},${y-r+6}" fill="#c0392b" stroke="#a93226" stroke-width="1"/>
+          <rect x="${x-r}" y="${y-r+4}" width="${r*2}" height="7" rx="3" fill="#e74c3c"/>` },
     ];
 
     const ACCESSORIES = [
-      { id: 'a0', emoji: '—',  label: 'None',        drawAcc: () => '' },
-      { id: 'a1', emoji: '📎', label: 'Paperclip',   drawAcc: (x,y) => `<path d="M${x+28},${y-10} Q${x+38},${y-20} ${x+34},${y+8} Q${x+30},${y+30} ${x+18},${y+28}" stroke="#95a5a6" stroke-width="3" fill="none" stroke-linecap="round"/>` },
-      { id: 'a2', emoji: '🔬', label: 'Monocle',     drawAcc: (x,y) => `<circle cx="${x+18}" cy="${y-18}" r="10" fill="none" stroke="#f39c12" stroke-width="2.5"/><circle cx="${x+18}" cy="${y-18}" r="6" fill="rgba(56,189,248,0.15)"/><line x1="${x+28}" y1="${y-10}" x2="${x+34}" y2="${y+4}" stroke="#f39c12" stroke-width="2"/>` },
-      { id: 'a3', emoji: '🎯', label: 'Star Sticker', drawAcc: (x,y) => `<text x="${x+28}" y="${y-12}" font-size="16">⭐</text>` },
-      { id: 'a4', emoji: '🖍️', label: 'Crayon',      drawAcc: (x,y) => `<rect x="${x-40}" y="${y+10}" width="16" height="28" rx="3" fill="#e74c3c"/><polygon points="${x-40},${y+38} ${x-24},${y+38} ${x-32},${y+50}" fill="#c0392b"/>` },
+      { id: 'a0', emoji: '—',  label: 'None',
+        drawAcc: () => '' },
+
+      // Glasses (round)
+      { id: 'a1', emoji: '🤓', label: 'Round Glasses',
+        drawAcc: (x,y) => `
+          <circle cx="${x-10}" cy="${y-6}" r="8" fill="none" stroke="#2c3e50" stroke-width="2.5"/>
+          <circle cx="${x+10}" cy="${y-6}" r="8" fill="none" stroke="#2c3e50" stroke-width="2.5"/>
+          <line x1="${x-2}" y1="${y-6}" x2="${x+2}" y2="${y-6}" stroke="#2c3e50" stroke-width="2"/>
+          <line x1="${x-32}" y1="${y-8}" x2="${x-18}" y2="${y-8}" stroke="#2c3e50" stroke-width="2"/>
+          <line x1="${x+18}" y1="${y-8}" x2="${x+32}" y2="${y-8}" stroke="#2c3e50" stroke-width="2"/>` },
+
+      // Sunglasses
+      { id: 'a2', emoji: '😎', label: 'Sunglasses',
+        drawAcc: (x,y) => `
+          <rect x="${x-22}" y="${y-14}" width="18" height="12" rx="4" fill="#1a1a1a"/>
+          <rect x="${x+4}" y="${y-14}" width="18" height="12" rx="4" fill="#1a1a1a"/>
+          <line x1="${x-4}" y1="${y-10}" x2="${x+4}" y2="${y-10}" stroke="#1a1a1a" stroke-width="2.5"/>
+          <line x1="${x-36}" y1="${y-12}" x2="${x-22}" y2="${y-10}" stroke="#1a1a1a" stroke-width="2"/>
+          <line x1="${x+22}" y1="${y-10}" x2="${x+36}" y2="${y-12}" stroke="#1a1a1a" stroke-width="2"/>` },
+
+      // Earrings
+      { id: 'a3', emoji: '💎', label: 'Earrings',
+        drawAcc: (x,y) => `
+          <circle cx="${x-34}" cy="${y+2}" r="4" fill="#38bdf8" stroke="#0284c7" stroke-width="1"/>
+          <circle cx="${x+34}" cy="${y+2}" r="4" fill="#38bdf8" stroke="#0284c7" stroke-width="1"/>` },
+
+      // Freckles
+      { id: 'a4', emoji: '🟠', label: 'Freckles',
+        drawAcc: (x,y) => `
+          <circle cx="${x-18}" cy="${y+8}" r="2" fill="rgba(139,69,19,0.45)"/>
+          <circle cx="${x-13}" cy="${y+12}" r="1.5" fill="rgba(139,69,19,0.45)"/>
+          <circle cx="${x-22}" cy="${y+13}" r="1.5" fill="rgba(139,69,19,0.45)"/>
+          <circle cx="${x+18}" cy="${y+8}" r="2" fill="rgba(139,69,19,0.45)"/>
+          <circle cx="${x+13}" cy="${y+12}" r="1.5" fill="rgba(139,69,19,0.45)"/>
+          <circle cx="${x+22}" cy="${y+13}" r="1.5" fill="rgba(139,69,19,0.45)"/>` },
     ];
 
     /* ════════════════════════════════════════════════════════
@@ -1191,29 +1273,32 @@
         const hatData   = HATS.find(h => h.id === hat)   || HATS[0];
         const accData   = ACCESSORIES.find(a => a.id === acc) || ACCESSORIES[0];
 
-        const cx = 60, cy = 62, r = 34;
+        // cx/cy = face center, r = face radius
+        // Face is centered at 60,72 in a 120x130 canvas so hats have room above
+        const cx = 60, cy = 72, r = 34;
 
         const svg = `
-          <!-- Face bg -->
+          <!-- Hat / Hair drawn BEHIND face -->
+          ${hatData.drawHat(cx, cy, r)}
+          <!-- Face -->
           <circle cx="${cx}" cy="${cy}" r="${r}" fill="${skinColor}" />
           <!-- Cheeks -->
           <circle cx="${cx-20}" cy="${cy+12}" r="7" fill="rgba(255,120,100,0.18)" />
           <circle cx="${cx+20}" cy="${cy+12}" r="7" fill="rgba(255,120,100,0.18)" />
-          <!-- Eyes at y=cy-6 -->
+          <!-- Eyes -->
           ${eyeData.draw(cx, cy-6)}
           <!-- Nose -->
           <circle cx="${cx}" cy="${cy+6}" r="2.5" fill="rgba(0,0,0,0.12)"/>
-          <!-- Mouth at y=cy+18 -->
+          <!-- Mouth -->
           ${mouthData.draw(cx, cy+18)}
-          <!-- Hat / Hair -->
-          ${hatData.drawHat(cx, cy, r)}
-          <!-- Accessory -->
+          <!-- Accessory (drawn on top) -->
           ${accData.drawAcc(cx, cy)}
-          <!-- Notebook spine detail -->
-          <rect x="2" y="${cy+28}" width="4" height="${r-10}" rx="2" fill="${skinColor}" opacity="0.4"/>
         `;
 
-        document.getElementById('avatarSVG').innerHTML = svg;
+        // Update viewBox to give hats headroom above face
+        const svgEl = document.getElementById('avatarSVG');
+        svgEl.setAttribute('viewBox', '0 0 120 130');
+        svgEl.innerHTML = svg;
       },
 
       setAvatarPart(part, val) {
@@ -1271,7 +1356,7 @@
         document.documentElement.style.setProperty('--accent', hex);
         document.querySelectorAll('.theme-swatch').forEach(s => {
           const isSelected = s.getAttribute('onclick')?.includes(`'${name}'`);
-          s.classList.toggle('selected', isSelected);
+          s.classList.toggle('selected', !!isSelected);
         });
       },
 
@@ -1284,32 +1369,34 @@
 
       async saveTheme() {
         const user = auth.currentUser;
-        if (!user) { alert('Session expired. Please sign in again.'); return; }
+        if (!user) { alert('Your session expired. Please sign in again.'); return; }
 
-        // Serialize avatar SVG
+        // Disable button to prevent double-submit
+        const btn = document.querySelector('#step-theme .btn-primary');
+        if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
         const avatarSVG = document.getElementById('avatarSVG').innerHTML;
         const profileData = {
-          nickname:           this.data.nickname,
+          nickname:           this.data.nickname  || 'Scholar',
           avatar:             this.data.avatar,
           avatarSVG,
-          persona:            this.data.persona  || 'default',
-          accent:             this.data.accent   || 'sky',
-          theme:              this.data.theme    || 'dark',
+          persona:            this.data.persona   || 'default',
+          accent:             this.data.accent    || 'sky',
+          theme:              this.data.theme     || 'dark',
           onboardingComplete: true,
           createdAt:          firebase.firestore.FieldValue.serverTimestamp(),
           uid:                user.uid,
           email:              user.email,
         };
 
-        // 1. Save to Firestore
+        // Save to Firestore (best-effort — don't block the tutorial on failure)
         try {
           await db.collection('users').doc(user.uid).set(profileData, { merge: true });
         } catch(e) {
-          console.error('Firestore save failed:', e);
-          // Non-fatal — still continue so user isn't stuck
+          console.warn('Firestore save failed (will retry on next login):', e);
         }
 
-        // 2. Cache profile in localStorage so index.html/app.js reads it instantly
+        // Always write to localStorage so index.html and app.js have it instantly
         try {
           localStorage.setItem('studyverse_state', JSON.stringify({
             theme:    profileData.theme,
@@ -1318,7 +1405,6 @@
             favorites: [],
             decks:    [],
           }));
-          // Also store full profile for app.js loadUserProfile()
           localStorage.setItem('studyverse_profile', JSON.stringify({
             nickname:  profileData.nickname,
             avatarSVG: profileData.avatarSVG,
@@ -1328,7 +1414,7 @@
           }));
         } catch(e) {}
 
-        // 3. Show tutorial before going to the app
+        // Always show the tutorial — never skip it
         Tutorial.init();
         LoginUI.showStep('step-tutorial');
       },
